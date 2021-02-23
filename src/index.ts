@@ -1,6 +1,13 @@
 import express, {Request, Response, NextFunction} from "express";
-// const express = require("express");
-// import * as cors from "cors";
+import "reflect-metadata";
+import {createConnection} from "typeorm";
+import {Users} from "./entity/Users";
+
+createConnection().then(async connection => {
+
+
+}).catch(error => console.log(error));
+
 const cors = require("cors");
 const app = express();
 
