@@ -6,34 +6,34 @@ const router = express.Router();
 
 /* test */
 
-createConnection().then (async connection => {
-    const userRepository = connection.getRepository(Users);
+// createConnection().then (async connection => {
+//     const userRepository = connection.getRepository(Users);
 
     
-router.get("/test",(req: Request, res: Response, next: NextFunction) => {
-    //contents.userInfo
-    //res.send(contents.userInfo)
-    res.json("testpage")
-})
+// router.get("/test",(req: Request, res: Response, next: NextFunction) => {
+//     //contents.userInfo
+//     //res.send(contents.userInfo)
+//     res.json("testpage")
+// })
 
-router.get("/find-testpage",controller.testpage)
+// router.get("/find-testpage",controller.testpage)
 
-router.get("/findOne-testpage/:id",async (req: Request, res: Response, next: NextFunction) => {
-    console.log("findOne test") 
-    //http://localhost:4000/contents/findOne-testpage/2 <--- id 2 deleted
+// router.get("/findOne-testpage/:id",async (req: Request, res: Response, next: NextFunction) => {
+//     console.log("findOne test") 
+//     //http://localhost:4000/contents/findOne-testpage/2 <--- id 2 deleted
 
-        const results = await userRepository.findOne(req.params.id);
-        //const results = await userRepository.delete(req.params.id);   <--- delete
-        return res.send(results);
+//         const results = await userRepository.findOne(req.params.id);
+//         //const results = await userRepository.delete(req.params.id);   <--- delete
+//         return res.send(results);
 
-})
+// })
 
-router.delete("/delete/:id", async (req: Request, res: Response) => {
-    console.log("deleted")
-    const userRepository = connection.getRepository(Users);
-    const results = await userRepository.delete(req.params.id);
-    return res.send(results);
-});
+// router.delete("/delete/:id", async (req: Request, res: Response) => {
+//     console.log("deleted")
+//     const userRepository = connection.getRepository(Users);
+//     const results = await userRepository.delete(req.params.id);
+//     return res.send(results);
+// });
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -83,5 +83,5 @@ router.post("/calendar",(req: Request, res: Response, next: NextFunction) => {
     res.send("calendar");
 })
 
-})
+// })
 export = router;
