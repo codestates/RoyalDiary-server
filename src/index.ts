@@ -2,7 +2,8 @@ import express, {Request, Response, NextFunction} from "express";
 import "reflect-metadata";
 import {createConnection} from "typeorm";
 import contents from "./router/contents"
-import {Users} from "./entity/Users"
+import userRouter from "./router/users"
+// import {Users} from "./entity/Users"
 require('dotenv').config()
 const cors = require("cors");
 const app = express();
@@ -31,23 +32,23 @@ const config: any ={
     }
   }
 createConnection(config).then(async connection => {
-    console.log("Inserting a new user into the database...");
-    const user = new Users();
-    user.name = "name";
-    user.nickname = "nickname";
-    user.password = "password";
-    user.email = "email";
-    user.mobile = "mobile";
+    // console.log("Inserting a new user into the database...");
+    // const user = new Users();
+    // user.name = "name";
+    // user.nickname = "nickname";
+    // user.password = "password";
+    // user.email = "email";
+    // user.mobile = "mobile";
 
-    await connection.manager.save(user);
+    // await connection.manager.save(user);
     
-    console.log("Saved a new user with id: " + user.id);
-    console.log("Loading users from the database...");
+    // console.log("Saved a new user with id: " + user.id);
+    // console.log("Loading users from the database...");
     
-    const users = await connection.manager.find(Users);
+    // const users = await connection.manager.find(Users);
     
-    console.log("Loaded users: ", users);
-    console.log("Here you can setup and run express/koa/any other framework.");
+    // console.log("Loaded users: ", users);
+    // console.log("Here you can setup and run express/koa/any other framework.");
 }).catch(error => console.log(error));
 
 app.use(cors());
@@ -58,6 +59,7 @@ app.get('/', (req:Request, res:Response, next:NextFunction) => {
 })
 
 app.use("/contents",contents);
+app.use("/users", userRouter)
 
 app.listen(4000, () => {
     console.log('Server is running!')
