@@ -6,7 +6,7 @@ import {Users} from "../entity/Users";
 const connection = getConnection();
 const userRepository = connection.getRepository(Users);
 
-module.exports = {
+const controllers = {
     testpage : async (req: Request, res: Response) => {
         console.log("testpage")
     
@@ -16,3 +16,5 @@ module.exports = {
     
     }
 }
+
+export default controllers;

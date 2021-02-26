@@ -1,9 +1,9 @@
 import express, {Request, Response, NextFunction} from "express";
 import "reflect-metadata";
-import {createConnection} from "typeorm";
+import {createConnection, getRepository} from "typeorm";
 import contents from "./router/contents"
 import users from "./router/users"
-// import {Users} from "./entity/Users"
+import {Users} from "./entity/Users"
 require('dotenv').config()
 const cors = require("cors");
 const app = express();
@@ -31,7 +31,15 @@ const config: any ={
       "subscribersDir": "src/subscriber"
     }
   }
-createConnection(config).then(async connection => {
+  createConnection(config)
+.then(() => {
+console.log('typeorm connected');
+})
+.catch((err) => {
+console.log('typeorm error', err);
+}); 
+// createConnection(config)
+// .then(async connection => {
     // console.log("Inserting a new user into the database...");
     // const user = new Users();
     // user.name = "name";
@@ -50,19 +58,20 @@ createConnection(config).then(async connection => {
     // console.log("Loaded users: ", users);
     // console.log("Here you can setup and run express/koa/any other framework.");
 
+    
+  // }).catch(error => console.log(error));
+  
+  app.use(express.json()) //익스프레스는 바디파서 대신 쓰는거! 바디파서는 받지않아도 된다!
   app.use(cors());
 
-  app.get('/', (req:Request, res:Response, next:NextFunction) => {
-      console.log('access detected!')
-      res.send("access detected!")
+  app.get('/', async (req:Request, res:Response, next:NextFunction) => {
+    const users = await getRepository(Users).find();
+    res.json(users);
   })
 
-  app.use("/contents",contents);
+  // app.use("/contents",contents);
   app.use("/users", users);
 
   app.listen(4000, () => {
     console.log('Server is running!')
   })
-
-}).catch(error => console.log(error));
-
