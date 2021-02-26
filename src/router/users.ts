@@ -4,7 +4,6 @@ import users from "../controllers/controllersUsers";
 const router = express.Router();
 
 //회원가입 회원가입 - post signup
-// router.post('/signup', users.postSignup);
 router.post('/signup', users.postSignup);
 
 // //첫 화면 로그인 - post login
@@ -17,8 +16,8 @@ router.post('/signup', users.postSignup);
 // router.post('/mypage', users.postCalendar);
 
 
-// //나의 정보 - get mypage
-// router.get('/mypage', users.getMypage);
+//나의 정보 - get mypage
+router.get('/mypage', users.getMypage);
 
 
 // //나의 정보 - delete user

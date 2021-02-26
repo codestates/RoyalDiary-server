@@ -51,5 +51,15 @@ export class Contents extends BaseEntity {
         type => Users,
         users => users.id
     )
-    userId : Contents
+    user : Contents
+
+    
+    static findDiaryListById(userId: number):Promise<Contents[]> {
+        return this.createQueryBuilder("contents")
+            .select("title")
+            .addSelect("id", "contentId")
+            .addSelect("createdAt")
+            .where("contents.userId = :userId", { userId })
+            .getRawMany();
+    }
 }

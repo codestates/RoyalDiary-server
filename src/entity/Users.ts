@@ -1,5 +1,5 @@
 
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, BaseEntity} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, BaseEntity, InsertResult} from "typeorm";
 import {Comments} from "./Comments"
 import {Contents} from "./Contents"
 
@@ -38,26 +38,37 @@ export class Users extends BaseEntity {
 
     @OneToMany(
         type => Contents,
-        contents => contents.userId
+        contents => contents.user
     )
     contents : Contents[]
         
-    static findByMobile(mobile: string) {
-        return this.createQueryBuilder("user")
-            .where("user.mobile = :mobile", { mobile })
+    static findById(id: number):Promise<Users | undefined>  {
+        return this.createQueryBuilder("users")
+            .where("users.id = :id", { id })
             .getOne();
     }
-    static findByEmail(email: string) {
-        return this.createQueryBuilder("user")
-            .where("user.email = :email", { email })
+    static findByMobile(mobile: string):Promise<Users | undefined> {
+        return this.createQueryBuilder("users")
+            .where("users.mobile = :mobile", { mobile })
             .getOne();
     }
-    static findByNickname(nickname: string) {
-        return this.createQueryBuilder("user")
-            .where("user.nickname = :nickname", { nickname })
+    static findByEmail(email: string):Promise<Users | undefined> {
+        return this.createQueryBuilder("users")
+            .where("users.email = :email", { email })
             .getOne();
     }
-    static insertNewUser(name: string, nickname: string, password: string, email: string, mobile: string) {
+    static findByNickname(nickname: string):Promise<Users | undefined> {
+        return this.createQueryBuilder("users")
+            .where("users.nickname = :nickname", { nickname })
+            .getOne();
+    }
+    static insertNewUser(
+        name: string, 
+        nickname: string, 
+        password: string, 
+        email: string, 
+        mobile: string
+        ):Promise<InsertResult | undefined> {
         return this.createQueryBuilder()
             .insert()
             .into(Users)

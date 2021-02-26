@@ -38,28 +38,7 @@ console.log('typeorm connected');
 .catch((err) => {
 console.log('typeorm error', err);
 }); 
-// createConnection(config)
-// .then(async connection => {
-    // console.log("Inserting a new user into the database...");
-    // const user = new Users();
-    // user.name = "name";
-    // user.nickname = "nickname";
-    // user.password = "password";
-    // user.email = "email";
-    // user.mobile = "mobile";
 
-    // await connection.manager.save(user);
-    
-    // console.log("Saved a new user with id: " + user.id);
-    // console.log("Loading users from the database...");
-    
-    // const users = await connection.manager.find(Users);
-    
-    // console.log("Loaded users: ", users);
-    // console.log("Here you can setup and run express/koa/any other framework.");
-
-    
-  // }).catch(error => console.log(error));
   
   app.use(express.json()) //익스프레스는 바디파서 대신 쓰는거! 바디파서는 받지않아도 된다!
   app.use(cors());

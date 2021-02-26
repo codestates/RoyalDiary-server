@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Request, Response, NextFunction } from "express";
 import {getConnection, createConnection, EntityRepository, getRepository} from "typeorm";
 import {Users} from "../entity/Users";
+import { Contents } from "../entity/Contents";
 
 
 
@@ -19,17 +20,26 @@ const users = {
             } else if (isMatchNickname) {
                 return res.status(409).send({"message": "nickname already exists"});
             } else {
-                await Users.insertNewUser(
-                    req.body.name,
-                    req.body.nickname,
-                    req.body.password, 
-                    req.body.email, 
-                    req.body.mobile 
-                    )
+                const user = new Users;
+                user.name = req.body.name;
+                user.nickname = req.body.nickname;
+                user.password = req.body.password;
+                user.email = req.body.email;
+                user.mobile = req.body.mobile;
+                await user.save();
+                //혹은 Users 엔티티에 입력한 메소드를 사용해서
+                // await Users.insertNewUser(
+                    // req.body.name,
+                    // req.body.nickname,
+                    // req.body.password, 
+                    // req.body.email, 
+                    // req.body.mobile 
+                //     )
                 //insertUser;
                 return res.send({
                     data:{
-                        "accessToken": "accessToken",//!this accessToken must be changed to real one!
+                        "accessToken": "accessToken",
+                        //!this accessToken must be changed to real one!
                     },
                     "message":"ok",
                 });
@@ -41,9 +51,8 @@ const users = {
     },
 
     // postLogin : async (req: Request, res: Response) => {
-    //     const users = await userRepository.find();
-    //     console.log(users)
-    //     res.send(users);
+    //     console.log(this is postLogin)
+    //     res.send();
     // },
 
     // postLogout : async (req: Request, res: Response) => {
@@ -64,11 +73,29 @@ const users = {
     //     res.send(users);
     // },
 
-    // getMypage : async (req: Request, res: Response) => {
-    //     const users = await userRepository.find();
-    //     console.log(users)
-    //     res.send(users);
-    // },
+    getMypage : async (req: Request, res: Response) => {
+        //!원래 accessToken을 받는데 일단 아이디로 받기로 한다.
+        try{
+            const findByIdNotAccessToken = await Users.findById(req.body.id);
+            const findDiaryByIdNotAccessToken = await Contents.findDiaryListById(req.body.id)
+            if(!findByIdNotAccessToken) {
+                res.send({"message": "cannot find user"})
+            } else {
+                res.send({
+                    "name": findByIdNotAccessToken.name,
+                    "email": findByIdNotAccessToken.email,
+                    "nickname": findByIdNotAccessToken.nickname,
+                    "mobile": findByIdNotAccessToken.mobile,
+                    "contents": findDiaryByIdNotAccessToken
+                })
+            }
+            console.log(findByIdNotAccessToken)
+            console.log(findDiaryByIdNotAccessToken)
+        } catch(e) {
+            res.status(500).send({"message": "err"});
+            throw new Error(e);
+        }
+    },
 
     // delDuser : async (req: Request, res: Response) => {
     //     const users = await userRepository.find();
