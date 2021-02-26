@@ -1,9 +1,9 @@
 
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, BaseEntity } from "typeorm";
 import {Comments} from "./Comments"
 
 @Entity()
-export class Stamps {
+export class Stamps extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id?: number;

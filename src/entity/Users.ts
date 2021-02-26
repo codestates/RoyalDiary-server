@@ -1,10 +1,10 @@
 
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, BaseEntity} from "typeorm";
 import {Comments} from "./Comments"
 import {Contents} from "./Contents"
 
 @Entity()
-export class Users {
+export class Users extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id?: number;
@@ -42,4 +42,28 @@ export class Users {
     )
     contents : Contents[]
         
+    static findByMobile(mobile: string) {
+        return this.createQueryBuilder("user")
+            .where("user.mobile = :mobile", { mobile })
+            .getOne();
+    }
+    static findByEmail(email: string) {
+        return this.createQueryBuilder("user")
+            .where("user.email = :email", { email })
+            .getOne();
+    }
+    static findByNickname(nickname: string) {
+        return this.createQueryBuilder("user")
+            .where("user.nickname = :nickname", { nickname })
+            .getOne();
+    }
+    static insertNewUser(name: string, nickname: string, password: string, email: string, mobile: string) {
+        return this.createQueryBuilder()
+            .insert()
+            .into(Users)
+            .values([
+                {name, nickname, password, email, mobile}
+            ])
+            .execute();
+    }
 }

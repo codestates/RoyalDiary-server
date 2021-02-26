@@ -1,9 +1,9 @@
 
-import {Entity, Column, PrimaryGeneratedColumn,ManyToMany, JoinTable} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn,ManyToMany, JoinTable, BaseEntity } from "typeorm";
 import {Users} from "./Users"
 
 @Entity()
-export class Collections {
+export class Collections extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id?: number;
