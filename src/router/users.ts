@@ -20,8 +20,8 @@ router.post('/mypage', users.postCalendar);
 router.get('/mypage', users.getMypage);
 
 
-// //나의 정보 - delete user
-// router.delete('/mypage', users.delDuser);
+//나의 정보 - delete user
+router.delete('/mypage', users.delDuser);
 
 
 export default router;
