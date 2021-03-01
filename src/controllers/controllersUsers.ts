@@ -4,7 +4,17 @@ import {getConnection, createConnection, EntityRepository, getRepository} from "
 import {Users} from "../entity/Users";
 import { Contents } from "../entity/Contents";
 
-
+declare global { //익스프레스에 커스텀 속성을 전역으로 선언하는 코드
+    namespace Express {
+        interface Request {
+        mobile: string;
+        email: string;
+        password: string;
+        nickname: string;
+        name: string;
+        }
+    }
+    }
 
 const users = {
     postSignup : async (req: Request, res: Response) => {
@@ -67,11 +77,20 @@ const users = {
     //     res.send(users);
     // },
 
-    // postCalendar : async (req: Request, res: Response) => {
-    //     const users = await userRepository.find();
-    //     console.log(users)
-    //     res.send(users);
-    // },
+    postCalendar : async (req: Request, res: Response) => {
+        try{
+            const findByCreatedAt = await Contents.findByCreatedAt(req.body.date);
+            if(findByCreatedAt.length === 0) {
+                res.status(404).send({"message": "err"});
+            } else {
+                // console.log(findByCreatedAt);
+                res.status(200).send({data: [findByCreatedAt]})
+            }
+        } catch(e) {
+            res.status(500).send({"message": "err"});
+            throw new Error(e);
+        }
+    },
 
     getMypage : async (req: Request, res: Response) => {
         //!원래 accessToken을 받는데 일단 아이디로 받기로 한다.
