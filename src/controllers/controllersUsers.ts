@@ -116,11 +116,27 @@ const users = {
         }
     },
 
-    // delDuser : async (req: Request, res: Response) => {
-    //     const users = await userRepository.find();
-    //     console.log(users)
-    //     res.send(users);
-    // }
+    delDuser : async (req: Request, res: Response) => {
+        //!원래 accessToken을 받는데 일단 아이디로 받기로 한다.
+        try{
+            console.log(users)
+            // if("리프레시 토큰이 없을 때") {
+                //!리프레시토큰이 없다면
+            //     res.status(401).send({"message": "refresh token not provided"})
+            // } else if("리프레시 토큰 기간이 지났을 때") {
+                //!리프레시토큰은 있지만 verify했을 때 err가 발생한다면
+            //     res.status(202).send({"message": "refresh token is outdated, pleaes log in again"})
+            // } else if("리프레시 토큰이 조작된 가짜일 때") {
+                //!리프레시토큰으로 받은 정보의 id와 실제 해당 id의 레코드를 비교해 다르다면 
+            //     res.status(400).send({"message": "refresh token has been tampered"})
+            // } else {
+                await Users.delete({id: req.body.id});
+                res.status(200).send({"message": "delete user information successfully"})
+            // }
+        } catch(e) {
+            res.status(500).send({"message": "server error"});
+        }
+    }
     
 }
 
