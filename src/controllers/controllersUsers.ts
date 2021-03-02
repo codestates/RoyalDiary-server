@@ -80,15 +80,16 @@ const users = {
                 email: req.body.email,
                 password: req.body.password
             })
-            const userInfo = {
-                name: findUser.name,
-                nickname: findUser.nickname,
-                email: findUser.email,
-                mobile: findUser.mobile
-            }
-            if(!userInfo) {
+            
+            if(!findUser) {
                 res.status(404).send({"message": "can't find user"});
             } else {
+                const userInfo = {
+                    name: findUser.name,
+                    nickname: findUser.nickname,
+                    email: findUser.email,
+                    mobile: findUser.mobile
+                }
                 const accessToken = generateAccessToken(userInfo);
                 const refreshToken = generateRefreshToken(userInfo);
                 res
