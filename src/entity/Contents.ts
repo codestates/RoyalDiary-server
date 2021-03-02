@@ -24,7 +24,7 @@ export class Contents extends BaseEntity {
     @Column()
     views: number;
 
-    @Column()
+    @Column("longtext")
     imgUrl: string;
 
  //   @Column()
@@ -49,7 +49,8 @@ export class Contents extends BaseEntity {
     /* contents(one) & comment(many) */
     @ManyToOne(
         type => Users,
-        users => users.id
+        users => users.id,
+        {onDelete:"CASCADE"}
     )
     user : Contents
 

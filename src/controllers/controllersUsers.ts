@@ -3,18 +3,19 @@ import { Request, Response, NextFunction } from "express";
 import {getConnection, createConnection, EntityRepository, getRepository} from "typeorm";
 import {Users} from "../entity/Users";
 import { Contents } from "../entity/Contents";
+const {checkRefeshToken, generateAccessToken, generateRefreshToken, sendRefreshToken, isAuthorized} = require('./token');
 
-declare global { //익스프레스에 커스텀 속성을 전역으로 선언하는 코드
-    namespace Express {
-        interface Request {
-        mobile: string;
-        email: string;
-        password: string;
-        nickname: string;
-        name: string;
-        }
-    }
-    }
+// declare global { //익스프레스에 커스텀 속성을 전역으로 선언하는 코드
+//     namespace Express {
+//         interface Request {
+//         mobile: string;
+//         email: string;
+//         password: string;
+//         nickname: string;
+//         name: string;
+//         }
+//     }
+// }
 
 const users = {
     postSignup : async (req: Request, res: Response) => {
@@ -46,10 +47,23 @@ const users = {
                     // req.body.mobile 
                 //     )
                 //insertUser;
-                return res.send({
+
+                const userInfo = {
+                    name: req.body.name,
+                    nickname: req.body.nickname,
+                    email: req.body.email,
+                    mobile: req.body.mobile,
+                }
+                const accessToken = generateAccessToken(userInfo);
+                const refreshToken = generateRefreshToken(userInfo);
+                
+                res
+                .cookie('refreshToken', refreshToken, {
+                    httpOnly: true
+                })
+                .send({
                     data:{
-                        "accessToken": "accessToken",
-                        //!this accessToken must be changed to real one!
+                        "accessToken": accessToken,
                     },
                     "message":"ok",
                 });
@@ -60,16 +74,46 @@ const users = {
         }
     },
 
-    // postLogin : async (req: Request, res: Response) => {
-    //     console.log(this is postLogin)
-    //     res.send();
-    // },
+    postLogin : async (req: Request, res: Response) => {
+        try {
+            const findUser: any = await Users.findOne({
+                email: req.body.email,
+                password: req.body.password
+            })
+            const userInfo = {
+                name: findUser.name,
+                nickname: findUser.nickname,
+                email: findUser.email,
+                mobile: findUser.mobile
+            }
+            if(!userInfo) {
+                res.status(404).send({"message": "can't find user"});
+            } else {
+                const accessToken = generateAccessToken(userInfo);
+                const refreshToken = generateRefreshToken(userInfo);
+                res
+                .cookie('refreshToken', refreshToken, {
+                    httpOnly: true
+                })
+                .send({
+                    data:{
+                        "accessToken": accessToken,
+                    },
+                    "message":"ok",
+                });
+            }
+        } catch(e) {
+            res.status(500).send({"message": "err"});
+            throw new Error(e);
+        }
+    },
 
     postLogout : async (req: Request, res: Response) => {
-        //!토큰이나 oAuth 둘 다 로그아웃이 되어야 하는데 토큰을 확인하고 맞으면 쿠키를 삭제하면 될것
         try{
-            if("토큰을 분석해 나온 id와 실제 id를 비교한다") {
-                res.clearCookie(/*삭제할 토큰 객체의 키를 string으로*/)
+            const isRealUser: any = await Users.findOne({email: isAuthorized(req).email})
+            if(isRealUser) {
+                res
+                .clearCookie("refreshToken")
                 .status(200).send({"message": "ok"})
             }
         } catch(e) {
@@ -101,23 +145,22 @@ const users = {
     },
 
     getMypage : async (req: Request, res: Response) => {
-        //!원래 accessToken을 받는데 일단 아이디로 받기로 한다.
         try{
-            const findByIdNotAccessToken = await Users.findById(req.body.id);
-            const findDiaryByIdNotAccessToken = await Contents.findDiaryListById(req.body.id)
-            if(!findByIdNotAccessToken) {
+            const findUser: any = await Users.findUser(isAuthorized(req).email);
+            const findDiaryByAccessToken = await Contents.findDiaryListById(findUser.id)
+            if(isAuthorized(req) === null) {
                 res.send({"message": "cannot find user"})
             } else {
                 res.send({
-                    "name": findByIdNotAccessToken.name,
-                    "email": findByIdNotAccessToken.email,
-                    "nickname": findByIdNotAccessToken.nickname,
-                    "mobile": findByIdNotAccessToken.mobile,
-                    "contents": findDiaryByIdNotAccessToken
+                    "name": isAuthorized(req).name,
+                    "email": isAuthorized(req).email,
+                    "nickname": isAuthorized(req).nickname,
+                    "mobile": isAuthorized(req).mobile,
+                    "contents": findDiaryByAccessToken
                 })
             }
-            console.log(findByIdNotAccessToken)
-            console.log(findDiaryByIdNotAccessToken)
+            console.log(isAuthorized(req));
+            //console.log("this is isAuthorized" + findDiaryByIdNotAccessToken)
         } catch(e) {
             res.status(500).send({"message": "err"});
             throw new Error(e);
@@ -125,22 +168,26 @@ const users = {
     },
 
     delDuser : async (req: Request, res: Response) => {
-        //!원래 accessToken을 받는데 일단 아이디로 받기로 한다.
         try{
+            const refreshToken = req.cookies.refreshToken;
             console.log(users)
-            // if("리프레시 토큰이 없을 때") {
-                //!리프레시토큰이 없다면
-            //     res.status(401).send({"message": "refresh token not provided"})
-            // } else if("리프레시 토큰 기간이 지났을 때") {
-                //!리프레시토큰은 있지만 verify했을 때 err가 발생한다면
-            //     res.status(202).send({"message": "refresh token is outdated, pleaes log in again"})
-            // } else if("리프레시 토큰이 조작된 가짜일 때") {
-                //!리프레시토큰으로 받은 정보의 id와 실제 해당 id의 레코드를 비교해 다르다면 
-            //     res.status(400).send({"message": "refresh token has been tampered"})
-            // } else {
-                await Users.delete({id: req.body.id});
-                res.status(200).send({"message": "delete user information successfully"})
-            // }
+            if(!refreshToken) {
+                res.status(401).send({"message": "refresh token not provided"})
+            } else if(!checkRefeshToken(refreshToken)) {
+                res.status(202).send({"message": "refresh token is outdated, pleaes log in again"})
+            } else {
+                const {email} = checkRefeshToken(refreshToken);
+                await Users.findUser(email)
+                .then(async (data: any) => {
+                    if(!data) {
+                        res.status(400).send({"message": "refresh token has been tampered"})
+                    } else {
+                        await Users.delete({email})
+                        res.status(200).send({"message": "delete user information successfully"})
+                    }
+                })
+                .catch(err => console.log(err));
+            }
         } catch(e) {
             res.status(500).send({"message": "server error"});
         }
