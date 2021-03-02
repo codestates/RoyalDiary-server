@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn,OneToMany,ManyToOne, BaseEntity, Between} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn,OneToMany,ManyToOne, BaseEntity, Between, OneToOne} from "typeorm";
 import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import {Comments} from "./Comments"
 import {Users} from "./Users"
@@ -54,7 +54,33 @@ export class Contents extends BaseEntity {
     )
     user : Contents
 
-    
+    static findEmailById() {
+        /**
+         * 1. 
+         */
+    }
+
+    static findByContentsId(id:number) {
+        return this.createQueryBuilder("contents")
+            .where("contents.id = :id", { id })
+            .getOne();
+    }
+    static deleteByContentsId(id:number) {
+        return this.createQueryBuilder("contents")
+        .delete()
+        .from(Contents)
+        .where("id = :id", { id })
+        .execute();
+    }
+    static insertNewContent(title: string, content: string, weather: string, emotion: string, views: number, imgUrl:string, isPublic:boolean) {
+        return this.createQueryBuilder()
+            .insert()
+            .into(Contents)
+            .values([
+                {title,content,weather,emotion,views,imgUrl,isPublic}
+            ])
+            .execute();
+        }
     static findDiaryListById(userId: number):Promise<Contents[]> {
         return this.createQueryBuilder("contents")
             .select("title")

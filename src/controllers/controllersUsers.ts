@@ -80,7 +80,7 @@ const users = {
                 email: req.body.email,
                 password: req.body.password
             })
-            
+            console.log(findUser)
             if(!findUser) {
                 res.status(404).send({"message": "can't find user"});
             } else {
