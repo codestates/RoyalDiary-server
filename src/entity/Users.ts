@@ -2,6 +2,7 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, BaseEntity, InsertResult} from "typeorm";
 import {Comments} from "./Comments"
 import {Contents} from "./Contents"
+const {isAuthorized} = require('../controllers/token');
 
 @Entity()
 export class Users extends BaseEntity {
@@ -38,13 +39,14 @@ export class Users extends BaseEntity {
 
     @OneToMany(
         type => Contents,
-        contents => contents.user
+        contents => contents.user,
+        {cascade:true}
     )
     contents : Contents[]
         
-    static findById(id: number):Promise<Users | undefined>  {
+    static findUser(email: string):Promise<Users | undefined>  {
         return this.createQueryBuilder("users")
-            .where("users.id = :id", { id })
+            .where("users.email = :email", { email })
             .getOne();
     }
     static findByMobile(mobile: string):Promise<Users | undefined> {
@@ -62,20 +64,20 @@ export class Users extends BaseEntity {
             .where("users.nickname = :nickname", { nickname })
             .getOne();
     }
-    static insertNewUser(
-        name: string, 
-        nickname: string, 
-        password: string, 
-        email: string, 
-        mobile: string
-        ):Promise<InsertResult | undefined> {
-        return this.createQueryBuilder()
-            .insert()
-            .into(Users)
-            .values([
-                {name, nickname, password, email, mobile}
-            ])
-            .execute();
-    }
+    // static insertNewUser(
+    //     name: string, 
+    //     nickname: string, 
+    //     password: string, 
+    //     email: string, 
+    //     mobile: string
+    //     ):Promise<InsertResult | undefined> {
+    //     return this.createQueryBuilder()
+    //         .insert()
+    //         .into(Users)
+    //         .values([
+    //             {name, nickname, password, email, mobile}
+    //         ])
+    //         .execute();
+    // }
 
 }

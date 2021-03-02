@@ -43,7 +43,13 @@ console.log('typeorm error', err);
   
   app.use(express.json()); //익스프레스는 바디파서 대신 쓰는거! 바디파서는 받지않아도 된다!
   app.use(cookieparser());
-  app.use(cors());
+  app.use(cors({
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
+    }),
+  );
+  
 
   app.get('/', async (req:Request, res:Response, next:NextFunction) => {
     const users = await getRepository(Users).find();
