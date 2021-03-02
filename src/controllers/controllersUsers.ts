@@ -147,11 +147,11 @@ const users = {
 
     getMypage : async (req: Request, res: Response) => {
         try{
-            const findUser: any = await Users.findUser(isAuthorized(req).email);
-            const findDiaryByAccessToken = await Contents.findDiaryListById(findUser.id)
             if(isAuthorized(req) === null) {
                 res.send({"message": "cannot find user"})
             } else {
+                const findUser: any = await Users.findUser(isAuthorized(req).email);
+                const findDiaryByAccessToken = await Contents.findDiaryListById(findUser.id)
                 res.send({
                     "name": isAuthorized(req).name,
                     "email": isAuthorized(req).email,
