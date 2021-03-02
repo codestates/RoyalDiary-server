@@ -52,11 +52,10 @@ console.log('typeorm error', err);
   
 
   app.get('/', async (req:Request, res:Response, next:NextFunction) => {
-    const users = await getRepository(Users).find();
-    res.json(users);
+    res.send("Hello world!");
   })
 
-  // app.use("/contents",contents);
+  app.use("/contents",contents);
   app.use("/users", users);
 
   app.listen(4000, () => {
