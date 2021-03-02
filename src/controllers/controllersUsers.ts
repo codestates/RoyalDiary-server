@@ -65,11 +65,19 @@ const users = {
     //     res.send();
     // },
 
-    // postLogout : async (req: Request, res: Response) => {
-    //     const users = await userRepository.find();
-    //     console.log(users)
-    //     res.send(users);
-    // },
+    postLogout : async (req: Request, res: Response) => {
+        //!토큰이나 oAuth 둘 다 로그아웃이 되어야 하는데 토큰을 확인하고 맞으면 쿠키를 삭제하면 될것
+        try{
+            if("토큰을 분석해 나온 id와 실제 id를 비교한다") {
+                res.clearCookie(/*삭제할 토큰 객체의 키를 string으로*/)
+                .status(200).send({"message": "ok"})
+            }
+        } catch(e) {
+            res.status(500).send({"message": "err"});
+            throw new Error(e);
+        }
+
+    },
 
     // postOauth : async (req: Request, res: Response) => {
     //     const users = await userRepository.find();
