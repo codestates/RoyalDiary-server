@@ -10,7 +10,7 @@ export class Comments  extends BaseEntity{
     id?: number;
 
     @Column()
-    test: string;
+    text: string;
 
 //    @Column()
 //    stampId: string;
@@ -18,8 +18,9 @@ export class Comments  extends BaseEntity{
 //    @Column()
 //    userId: number;
 
-    @Column()
-    contentId: number;
+    //@Column()
+    //contentId: number;
+    
 
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     createdAt: Date;
@@ -46,6 +47,35 @@ export class Comments  extends BaseEntity{
         type => Contents,
         contents => contents.id
     )
-    contentsId : Contents
+    contentId : Contents
+
+    /*
+                username : ,
+                stampUrl :
+                commentId : ,
+                createdAt : ,
+                updatedAt : ,
+                stampId : ,
+
+    */
+    static getCommentByContentId(contentId : number) {
+        return this.createQueryBuilder("comments")
+        .select("id","commentId") //get id ---> that name : commentId
+        .addSelect("stampId")
+        .addSelect("createdAt")
+        .addSelect("updatedAt")
+        .leftJoin("comment.userId","users")
+        //leftjoinAndmapone -----?
+        .addSelect("users.nickname","username")
+        .leftJoin("comment.stampsId","stamps")
+        .addSelect("stamps.stampUrl","stampUrl")
+        .where("comments.contentId = :contentId",{contentId})
+        .getRawMany();
+        /*
+        SELECT id as commentId, stampId, createdAt, updatedAt  FROM comments
+        LEFT JOIN comment.userId 
+        WHERE comments.contentId = :contentId 
+        */
+    }
 
 }
