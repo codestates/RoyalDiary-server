@@ -16,16 +16,14 @@ router.patch("/ucontent", controller.patchUcontent);
 
 router.delete("/dcontent/:id", controller.delDcontent);
 
+router.post("/comment", controller.postComment);
+
 router.get(
   "/publiccontents",
   (req: Request, res: Response, next: NextFunction) => {
     res.send("publiccontents");
   }
 );
-
-router.post("/comment", (req: Request, res: Response, next: NextFunction) => {
-  res.send("comment");
-});
 
 router.patch("/ucomment", controller.patchUcomment);
 

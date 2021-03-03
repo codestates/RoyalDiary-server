@@ -66,6 +66,12 @@ export class Contents extends BaseEntity {
       .where("contents.id = :id", { id })
       .getOne();
   }
+  static findUserIdByContentsId(id: number) {
+    return this.createQueryBuilder("contents")
+      .select("userId")
+      .where("contents.id = :id", { id })
+      .getRawOne();
+  }
   static deleteByContentsId(id: number) {
     return this.createQueryBuilder("contents")
       .delete()
