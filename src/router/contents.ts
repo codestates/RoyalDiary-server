@@ -1,37 +1,43 @@
 import express, { Request, Response, NextFunction } from "express";
 import { createConnection } from "typeorm";
-import {Users} from "../entity/Users";
+import { Users } from "../entity/Users";
 import controller from "../controllers/controllersContents";
 const router = express.Router();
 
-router.delete("/testpage/:id",controller.testpage);
+router.delete("/testpage/:id", controller.testpage);
 
-router.post("/ccontent",controller.postCcontet);
+router.post("/ccontent", controller.postCcontet);
 
-router.get("/contents",controller.getContents);
+router.get("/contents", controller.getContents);
 
-router.get("/content",controller.getContent);
+router.get("/content", controller.getContent);
 
-router.patch("/ucontent",controller.patchUcontent);
+router.patch("/ucontent", controller.patchUcontent);
 
-router.delete("/dcontent/:id",controller.delDcontent);
+router.delete("/dcontent/:id", controller.delDcontent);
 
-router.get("/publiccontents",(req: Request, res: Response, next: NextFunction) => {
+router.get(
+  "/publiccontents",
+  (req: Request, res: Response, next: NextFunction) => {
     res.send("publiccontents");
-})
+  }
+);
 
-router.post("/comment",(req: Request, res: Response, next: NextFunction) => {
-    res.send("comment");
-})
+router.post("/comment", (req: Request, res: Response, next: NextFunction) => {
+  res.send("comment");
+});
 
-router.patch("/ucomment",controller.patchUcomment)
+router.patch("/ucomment", controller.patchUcomment);
 
-router.delete("/dcomment",(req: Request, res: Response, next: NextFunction) => {
+router.delete(
+  "/dcomment",
+  (req: Request, res: Response, next: NextFunction) => {
     res.send("dcomment");
-})
+  }
+);
 
-router.post("/calendar",(req: Request, res: Response, next: NextFunction) => {
-    res.send("calendar");
-})
+router.post("/calendar", (req: Request, res: Response, next: NextFunction) => {
+  res.send("calendar");
+});
 
 export = router;
