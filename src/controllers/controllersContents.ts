@@ -5,7 +5,7 @@ import { Users } from "../entity/Users";
 import { Stamps } from "../entity/Stamps";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
-const { isAuthorized, checkRefeshToken } = require("./token");
+const { isAuthorized, generateAccessToken, checkRefeshToken } = require("./token");
 
 const controllers = {
   testpage: async (req: Request, res: Response) => {
@@ -82,55 +82,81 @@ const controllers = {
   getPubliccontents: async (req: Request, res: Response) => {},
   
   postComment: async (req: Request, res: Response) => {
-    // try {
-    //   const refreshToken = req.cookies.refreshToken;
-    //   const isTampered = await Users.findUser(refreshToken.email)
-    //   if(isAuthorized(req)) {
-    //     //200
-    //   } else if(리프레시토큰 정보 맞는지 확인) {
-    //     //리프레시 토큰이 있는가
-    //     //리프레시 토큰 조작되었는가
-
-    //     //201
-    //   } else if()
-    // } catch(e) {
-
-    // }
-    //accessToken, stampId(옵션), contentId, text를 받는다.
-    //200 액세스토큰이 있다
-    // {
-    //   "message": "ok",
-    //   "data": {
-    //     "commentInfo":{   
-    //       "id": "contentId",
-    //       "userId":"userId",
-    //       "nickname":"nickname",
-    //       "createdAt":"createdAt",
-    //       "updatedAt": "updatedAt",
-    //       "text":"text",
-    //       "stampId":"stampId"
-    //     },
-    //   }
-    // }
-    //201 액세스토큰은 없는데 리프레시 토큰 정보가 맞으면
-    // {
-    //   "message": "New AccessToken, please restore and request again",
-    //   "data": {
-    //     "accessToken": "accessToken"
-    //     "commentInfo":{   
-    //       "id": "contentId",
-    //       "userId":"userId",
-    //       "nickname":"nickname",
-    //       "createdAt":"createdAt",
-    //       "updatedAt": "updatedAt",
-    //       "text":"text",
-    //       "stampId":"stampId"
-    //     }
-    //   }
-    // }
-    //401 엑세스토큰은 없는데 리프레시 토큰 있는데 정보가 안 맞으면
-    //500 서버에러
-
+    try {
+      const refreshToken = req.cookies.refreshToken;
+      if(isAuthorized(req)) {
+        const findUserId: any = await Users.findOne({email: isAuthorized(req).email})
+        const comment = new Comments();
+        comment.text = req.body.text;
+        comment.user = findUserId.id;
+        comment.stamp = req.body.stampId;
+        comment.content = req.body.contentId;
+        await comment.save();
+        res.send({
+          message: "ok",
+          data: {
+            commentInfo:{   
+              id: comment.content,
+              userId: comment.user,
+              nickname: isAuthorized(req).nickname,
+              createdAt: comment.createdAt,
+              updatedAt: comment.updatedAt,
+              text: comment.text,
+              stampId: comment.stamp
+            },
+          }
+        })
+      } else if(refreshToken) {
+        const verifyRefreshToken: {
+          name: string,
+          nickname: string, 
+          email: string, 
+          mobile: string
+          iat?: number, 
+          exp?: number
+        } = checkRefeshToken(refreshToken);
+        const userEmail: string = verifyRefreshToken.email;
+        const isTampered: any = await Users.findUser(userEmail);//true: 조작안됨, false: 조작됨
+        const findUserIdByrefreshToken: any = await Users.findOne({email: verifyRefreshToken.email})
+        console.log(typeof verifyRefreshToken.email)
+        if(!isTampered) {
+          res.status(401).send({"message": "refresh token has been tampered"});
+        } else {
+          const userInfo = {
+            name: verifyRefreshToken.name,
+            nickname: verifyRefreshToken.nickname,
+            email: verifyRefreshToken.email,
+            mobile: verifyRefreshToken.mobile,
+          }
+          const accessToken: string = generateAccessToken(userInfo)
+          console.log("hello")
+          const comment = new Comments();
+          comment.text = req.body.text;
+          comment.user = findUserIdByrefreshToken.id
+          comment.stamp = req.body.stampId;
+          comment.content = req.body.contentId;
+          await comment.save();
+          res.status(200)
+          .send({
+            message: "New AccessToken, please restore and request again",
+            data: {
+              accessToken: accessToken,
+              commentInfo:{   
+                id: comment.content,
+                userId: comment.user,
+                nickname: findUserIdByrefreshToken.nickname,
+                createdAt: comment.createdAt,
+                updatedAt: comment.updatedAt,
+                text: comment.text,
+                stampId: comment.stamp
+              }
+            }
+          })
+        }
+      }
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+    }
   },
   patchUcomment: async (req: Request, res: Response) => {},
   delDcomment: async (req: Request, res: Response) => {

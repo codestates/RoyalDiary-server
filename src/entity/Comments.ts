@@ -17,15 +17,6 @@ export class Comments extends BaseEntity {
   @Column()
   text: string;
 
-  //    @Column()
-  //    stampId: string;
-
-  //    @Column()
-  //    userId: number;
-
-  //@Column()
-  //contentId: number;
-
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
