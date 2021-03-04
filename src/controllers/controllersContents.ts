@@ -8,18 +8,39 @@ import { Comments } from "../entity/Comments";
 const { isAuthorized, generateAccessToken, checkRefeshToken } = require("./token");
 
 const controllers = {
-  testpage: async (req: Request, res: Response) => {
-    console.log("testpage");
-    const findUsers = await getRepository(Users).find();
-    //const findNumber = await Users.findBytest(Number(req.params.id));
-    const deleteContent = await Contents.deleteByContentsId(
-      Number(req.params.id)
-    );
-    //http://localhost:4000/contents/testpage/1 <-- deleted
-    console.log(deleteContent);
-    res.send(deleteContent);
+  postCcontet: async (req: Request, res: Response) => {
+    try {
+      const refreshToken = req.cookies.refreshToken
+      
+      if(!req.body.title||!req.body.content||!req.body.weather||!req.body.emotion||!req.body.imgUrl||!req.body.isPublic) {
+        res.status(404).send({message: "error occured"})
+      } else if (!refreshToken){
+        res.status(401).send({message: "refresh token has been tempered"})
+      } else if(!checkRefeshToken(refreshToken)){
+        const checkRefreshToken = checkRefeshToken(refreshToken)
+        res
+          .status(201)
+          .send({
+            data : {
+              accessToken: generateAccessToken(checkRefreshToken)
+            },
+            message : "New AccessToken, please restore and request again"
+          })
+      }else{
+        await Contents.insertNewContent(
+          req.body.title,
+          req.body.content,
+          req.body.weather,
+          req.body.emotion,
+          req.body.imgUrl,
+          req.body.isPublic
+        );
+        res.status(200).send("message : ok");
+      }
+    } catch(e) {
+      throw new Error(e)
+    }
   },
-  postCcontet: async (req: Request, res: Response) => {},
   getContents: async (req: Request, res: Response) => {
     const contents = await getRepository(Contents).find();
     console.log(contents);
@@ -64,17 +85,7 @@ const controllers = {
     }
   },
   patchUcontent: async (req: Request, res: Response) => {
-    await Contents.insertNewContent(
-      req.body.title,
-      req.body.content,
-      req.body.weather,
-      req.body.emotion,
-      req.body.views,
-      req.body.imgUrl,
-      req.body.isPublic
-    );
 
-    return res.send("message : ok");
   },
   delDcontent: async (req: Request, res: Response) => {
     await Contents.deleteByContentsId(Number(req.params.id));
