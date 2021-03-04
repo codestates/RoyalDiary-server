@@ -13,7 +13,7 @@ router.post("/logout", users.postLogout);
 // //첫 화면 oAuth - post oAuth
 // router.post('/oauth', users.postOauth);
 //나의 정보 - post callendar
-router.get("/mypage", users.getCalendar);
+router.get("/calendar", users.getCalendar);
 
 //나의 정보 - get mypage
 router.get("/mypage", users.getMypage);
