@@ -49,10 +49,10 @@ const controllers = {
   getContent: async (req: Request, res: Response) => {
     try{
       const findId: any = await Contents.findSelectByContentsId(req.body.contentId);
-      const getComment: any = await Comments.getCommentByContentId(req.body.contentId);
-      const getUserId: any = await Contents.findByContentsId(req.body.contentId);
-      const findIdByContentsId: any = await Contents.findUserIdByContentsId(getUserId.id);
-      const getContentUser: any = await Users.findById(findIdByContentsId.userId)
+      const getComment: any = await Comments.findCommentByContentId(req.body.contentId);
+      const getContent: any = await Contents.findByContentsId(req.body.contentId);
+      const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(getContent.id);
+      const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
 
       findId.nickname = getContentUser.nickname;
       for(let i: number = 0; i < getComment.length; i++) {
@@ -84,7 +84,7 @@ const controllers = {
       throw new Error(e);
     }
   },
-  patchUcontent: async (req: Request, res: Response) => {
+  patchUcontent: async (req: Request, res: Response) => {  
 
   },
   delDcontent: async (req: Request, res: Response) => {
@@ -192,7 +192,30 @@ const controllers = {
   },
   patchUcomment: async (req: Request, res: Response) => {},
   delDcomment: async (req: Request, res: Response) => {
+    try {
+      const refreshToken = req.cookies.refreshToken
 
+      if(!refreshToken) {
+        res.status(401).send({message: "refresh token has been tempered"})
+      } else if (!checkRefeshToken(refreshToken)) {
+        const checkRefreshToken = checkRefeshToken(refreshToken)
+        res
+          .status(201)
+          .send({
+            data : {
+              accessToken: generateAccessToken(checkRefreshToken)
+            },
+            message : "New AccessToken, please restore and request again"
+          })
+      } else if (refreshToken){
+        await Comments.deleteByCommentId(req.body.commentId)
+        res.status(200).send({message: "comment successfully deleted"})
+      } else {
+        res.status(500).send({message: "error"})
+      }
+    } catch(e) {
+      throw new Error(e)
+    } 
   },
   postCalendar: async (req: Request, res: Response) => {},
 };

@@ -58,12 +58,6 @@ export class Contents extends BaseEntity {
   @ManyToOne((type) => Users, (users) => users.id, { onDelete: "CASCADE" })
   user: Contents;
 
-  static findEmailById() {
-    /**
-     * 1.
-     */
-  }
-
   static findByContentsId(id: number) {
     return this.createQueryBuilder("contents")
       .where("contents.id = :id", { id })
