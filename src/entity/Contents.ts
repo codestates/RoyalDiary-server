@@ -33,6 +33,9 @@ export class Contents extends BaseEntity {
   views: number;
 
   @Column("longtext")
+  imgMain: string;
+
+  @Column()
   imgUrl: string;
 
   //   @Column()
