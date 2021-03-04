@@ -41,8 +41,8 @@ const upload = multer({
     s3: new AWS.S3(),
     bucket: 'royaldiarymulter',
     acl: 'public-read',
-    key: function (req: Request, file: any, cb: Function) {//! file의 타입은 일단 any로 했지만 뭘 해야 하는지?
-      let extension: string = path.extname(file.originalname); //! path.extname()은 확장자를 가져온다. originalname은 뭘 의미하는지?
+    key: function (req: Request, file: any, cb: Function) {
+      let extension: string = path.extname(file.originalname);
       cb(null, Date.now().toString() + extension);
     },
   }),

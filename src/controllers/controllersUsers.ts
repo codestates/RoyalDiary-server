@@ -140,7 +140,7 @@ const users = {
   //     res.send(users);
   // },
 
-  postCalendar: async (req: Request, res: Response) => {
+  getCalendar: async (req: Request, res: Response) => {
     try {
       const findByCreatedAt = await Contents.findByCreatedAt(req.body.date);
       if (findByCreatedAt.length === 0) {
