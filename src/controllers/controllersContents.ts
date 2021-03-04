@@ -88,7 +88,28 @@ const controllers = {
 
   },
   delDcontent: async (req: Request, res: Response) => {
-    await Contents.deleteByContentsId(Number(req.params.id));
+    try {
+      const refreshToken = req.cookies.refreshToken
+
+      if(!refreshToken) {
+        res.status(401).send({message: "refresh token has been tempered"})
+      } else if (!checkRefeshToken(refreshToken)) {
+        const checkRefreshToken = checkRefeshToken(refreshToken)
+        res
+          .status(201)
+          .send({
+            data : {
+              accessToken: generateAccessToken(checkRefreshToken)
+            },
+            message : "New AccessToken, please restore and request again"
+          })
+      } else {
+        await Contents.deleteByContentsId(req.body.contentId)
+        res.status(200).send({message: "content successfully deleted"})
+      }
+    } catch(e) {
+      throw new Error(e)
+    } 
   },
   getPubliccontents: async (req: Request, res: Response) => {},
   
@@ -171,7 +192,7 @@ const controllers = {
   },
   patchUcomment: async (req: Request, res: Response) => {},
   delDcomment: async (req: Request, res: Response) => {
-    //const deleteContent = await Contents.deleteByContentsId(Number(req.params.id))
+
   },
   postCalendar: async (req: Request, res: Response) => {},
 };
