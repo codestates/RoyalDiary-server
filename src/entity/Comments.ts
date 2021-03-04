@@ -35,7 +35,14 @@ export class Comments extends BaseEntity {
   @ManyToOne((type) => Contents, (contents) => contents.id)
   content: Contents;
 
-  static getCommentByContentId(content: number):Promise<Comments[] | undefined> {
+  static deleteByCommentId(id: number) {
+    return this.createQueryBuilder("comments")
+      .delete()
+      .from(Comments)
+      .where("id = :id", { id })
+      .execute();
+  }
+  static findCommentByContentId(content: number):Promise<Comments[] | undefined> {
     return (
       this.createQueryBuilder("comments")
         .select("id", "commentId")

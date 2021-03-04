@@ -25,12 +25,7 @@ router.get(
 
 router.patch("/ucomment", controller.patchUcomment);
 
-router.delete(
-  "/dcomment",
-  (req: Request, res: Response, next: NextFunction) => {
-    res.send("dcomment");
-  }
-);
+router.delete("/dcomment",controller.delDcomment);
 
 router.post("/calendar", (req: Request, res: Response, next: NextFunction) => {
   res.send("calendar");
