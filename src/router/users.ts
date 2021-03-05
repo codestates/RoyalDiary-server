@@ -6,6 +6,9 @@ const router = express.Router();
 //회원가입 회원가입 - post signup
 router.post("/signup", users.postSignup);
 
+//회원가입 중복확인 - post matchinfo
+router.post("/matchinfo", users.matchInfo);
+
 //첫 화면 로그인 - post login
 router.post("/login", users.postLogin);
 //첫 화면 로그아웃 - post logout

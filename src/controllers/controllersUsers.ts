@@ -85,6 +85,27 @@ const users = {
     }
   },
 
+  matchInfo: async (req: Request, res: Response) => {
+    try {
+      const email: string = req.body.email;
+      const mobile: string = req.body.mobile;
+      const nickname: string = req.body.nickname;
+      if(email) {
+        const isEmail: Users | undefined = await Users.findOne({email: email});
+        isEmail ? res.send({email: true}) : res.send({email: false});
+      } else if(mobile) {
+        const isMobile: Users | undefined = await Users.findOne({mobile: mobile});
+        isMobile ? res.send({mobile: true}) : res.send({mobile: false});
+      } else if(nickname) {
+        const isNickname: Users | undefined = await Users.findOne({nickname: nickname});
+        isNickname ? res.send({nickname: true}) : res.send({nickname: false});
+      }
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
+  },
+
   postLogin: async (req: Request, res: Response) => {
     try {
       const findUser: any = await Users.findOne({
