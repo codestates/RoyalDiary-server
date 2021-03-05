@@ -70,7 +70,7 @@ export class Contents extends BaseEntity {
     return this.createQueryBuilder("contents")
       .delete()
       .from(Contents)
-      .where("id = :id", { id })
+      .where("contents.id = :id", { id })
       .execute();
   }
   static insertNewContent(
@@ -78,14 +78,13 @@ export class Contents extends BaseEntity {
     content: string,
     weather: string,
     emotion: string,
-    views: number,
     imgUrl: string,
     isPublic: boolean
   ) {
     return this.createQueryBuilder()
       .insert()
       .into(Contents)
-      .values([{ title, content, weather, emotion, views, imgUrl, isPublic }])
+      .values([{ title, content, weather, emotion, imgUrl, isPublic }])
       .execute();
   }
   static findDiaryListById(userId: number): Promise<Contents[]> {

@@ -55,10 +55,5 @@ export class Comments extends BaseEntity {
         .where("comments.content = :content", { content })
         .getRawMany()
     );
-    /*
-        SELECT id as commentId, stampId, createdAt, updatedAt  FROM comments
-        LEFT JOIN comment.userId 
-        WHERE comments.contentId = :contentId 
-        */
   }
 }

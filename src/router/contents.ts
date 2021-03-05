@@ -4,8 +4,6 @@ import { Users } from "../entity/Users";
 import controller from "../controllers/controllersContents";
 const router = express.Router();
 
-router.delete("/testpage/:id", controller.testpage);
-
 router.post("/ccontent", controller.postCcontet);
 
 router.get("/contents", controller.getContents);
@@ -14,7 +12,7 @@ router.get("/content", controller.getContent);
 
 router.patch("/ucontent", controller.patchUcontent);
 
-router.delete("/dcontent/:id", controller.delDcontent);
+router.delete("/dcontent", controller.delDcontent);
 
 router.get(
   "/publiccontents",
