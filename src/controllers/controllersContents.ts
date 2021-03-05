@@ -12,9 +12,7 @@ const controllers = {
     try {
       const refreshToken = req.cookies.refreshToken
       
-      if(!req.body.title||!req.body.content||!req.body.weather||!req.body.emotion||!req.body.imgUrl||!req.body.isPublic) {
-        res.status(404).send({message: "error occured"})
-      } else if (!refreshToken){
+      if (!refreshToken){
         res.status(401).send({message: "refresh token has been tempered"})
       } else if(!checkRefeshToken(refreshToken)){
         const checkRefreshToken = checkRefeshToken(refreshToken)
@@ -33,6 +31,7 @@ const controllers = {
           req.body.weather,
           req.body.emotion,
           req.body.imgUrl,
+          req.body.imgMain,
           req.body.isPublic
         );
         res.status(200).send("message : ok");

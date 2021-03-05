@@ -82,12 +82,13 @@ export class Contents extends BaseEntity {
     weather: string,
     emotion: string,
     imgUrl: string,
+    imgMain : string,
     isPublic: boolean
   ) {
     return this.createQueryBuilder()
       .insert()
       .into(Contents)
-      .values([{ title, content, weather, emotion, imgUrl, isPublic }])
+      .values([{ title, content, weather, emotion, imgUrl, imgMain, isPublic }])
       .execute();
   }
   static findDiaryListById(userId: number): Promise<Contents[]> {
