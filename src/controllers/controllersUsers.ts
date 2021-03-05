@@ -169,9 +169,23 @@ const users = {
         res.status(404).send({ message: "err" });
       } else {
         // console.log(findByCreatedAt);
-        res.status(200).send({ data: [findByCreatedAt] });
+        res.status(200).send({ data: findByCreatedAt });
       }
     } catch (e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
+  },
+
+  getMcalendar: async (req: Request, res: Response) => {
+    try {
+      const findByMonth = await Contents.findByMonth(req.body.date);
+      if (findByMonth.length === 0) {
+        res.status(404).send({ message: "err" });
+      } else {
+        res.status(200).send({ data: findByMonth });
+      }
+    } catch(e) {
       res.status(500).send({ message: "err" });
       throw new Error(e);
     }

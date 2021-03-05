@@ -15,8 +15,10 @@ router.post("/login", users.postLogin);
 router.post("/logout", users.postLogout);
 // //첫 화면 oAuth - post oAuth
 // router.post('/oauth', users.postOauth);
-//나의 정보 - post callendar
+//나의 정보 - get callendar
 router.get("/calendar", users.getCalendar);
+//나의 정보 - get callendar month
+router.get("/mcalendar", users.getMcalendar);
 
 //나의 정보 - get mypage
 router.get("/mypage", users.getMypage);

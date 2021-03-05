@@ -8,9 +8,10 @@ import {
   Between,
   OneToOne,
 } from "typeorm";
-import { startOfDay, endOfDay, parseISO } from "date-fns";
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { Comments } from "./Comments";
 import { Users } from "./Users";
+import { String } from "aws-sdk/clients/acm";
 
 @Entity()
 export class Contents extends BaseEntity {
@@ -100,8 +101,8 @@ export class Contents extends BaseEntity {
       .getRawMany();
   }
   static findByCreatedAt(date: string): Promise<Contents[]> {
-    const startDate = startOfDay(parseISO(date));
-    const endDate = endOfDay(parseISO(date));
+    const startDate: Date = startOfDay(parseISO(date));
+    const endDate: Date = endOfDay(parseISO(date));
     return (
       this.createQueryBuilder("Contents")
         .select("title")
@@ -117,6 +118,23 @@ export class Contents extends BaseEntity {
         .getRawMany()
     );
   }
+  static findByMonth(date: string): Promise<Contents[]> {
+    const dateFormat: Date = parseISO(date);
+    const monthStart: Date = startOfMonth(dateFormat); 
+    const monthEnd: Date = endOfMonth(dateFormat);
+    return (
+      this.createQueryBuilder("contents")
+      .select("title")
+      .addSelect("imgUrl")
+      .addSelect("createdAt")
+      .where("createdAt > :monthStart AND createdAt < :monthEnd", {
+        monthStart,
+        monthEnd,
+      })
+    )
+    .getRawMany()
+  }
+
   static findSelectByContentsId(id: number) {
     return this.createQueryBuilder("contents")
       .select("id")
