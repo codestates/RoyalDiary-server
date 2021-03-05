@@ -164,7 +164,7 @@ const users = {
 
   getCalendar: async (req: Request, res: Response) => {
     try {
-      const findByCreatedAt = await Contents.findByCreatedAt(req.body.date);
+      const findByCreatedAt = await Contents.findByCreatedAt(req.query.date as string);
       if (findByCreatedAt.length === 0) {
         res.status(404).send({ message: "err" });
       } else {
@@ -179,7 +179,7 @@ const users = {
 
   getMcalendar: async (req: Request, res: Response) => {
     try {
-      const findByMonth = await Contents.findByMonth(req.body.date);
+      const findByMonth = await Contents.findByMonth(req.query.date as string);
       if (findByMonth.length === 0) {
         res.status(404).send({ message: "err" });
       } else {
