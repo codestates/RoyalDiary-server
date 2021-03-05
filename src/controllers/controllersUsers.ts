@@ -130,6 +130,7 @@ const users = {
           })
           .send({
             data: {
+              nickname: findUser.nickname,
               accessToken: accessToken,
             },
             message: "ok",
