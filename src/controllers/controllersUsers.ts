@@ -97,8 +97,8 @@ const users = {
         const isMobile: Users | undefined = await Users.findOne({mobile: mobile});
         isMobile ? res.send({"message": "mobile already exists"}) : res.send({"message": "mobile is usable"});
       } else if(nickname) {
-        const isNickname: Users | undefined = await Users.findOne({"message": "nickname is usable"});
-        isNickname ? res.send({"message": "nickname already exists"}) : res.send({nickname: false});
+        const isNickname: Users | undefined = await Users.findOne({nickname: nickname});
+        isNickname ? res.send({"message": "nickname already exists"}) : res.send({"message": "nickname is usable"});
       }
     } catch(e) {
       res.status(500).send({ message: "err" });
