@@ -119,6 +119,8 @@ export class Contents extends BaseEntity {
     );
   }
   static findByMonth(date: string): Promise<Contents[]> {
+    console.log(date)
+    console.log("--------------------------------")
     const dateFormat: Date = parseISO(date);
     const monthStart: Date = startOfMonth(dateFormat); 
     const monthEnd: Date = endOfMonth(dateFormat);
