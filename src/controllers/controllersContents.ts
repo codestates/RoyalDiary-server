@@ -5,6 +5,7 @@ import { Users } from "../entity/Users";
 import { Stamps } from "../entity/Stamps";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
+import { AnyARecord } from "node:dns";
 const { isAuthorized, generateAccessToken, checkRefeshToken } = require("./token");
 
 const controllers = {
@@ -110,7 +111,52 @@ const controllers = {
       throw new Error(e)
     } 
   },
-  getPubliccontents: async (req: Request, res: Response) => {},
+  getPubliccontents: async (req: Request, res: Response) => {
+    //const getPublicContents: any = await Contents.findContentsByPage(req.query.page);
+    const pageNum : any = req.query.page;
+    let skip : number = 0;
+
+    try {
+      if (pageNum> 1) {
+        skip = 9 * (pageNum -1);
+      }
+      const allContent : any = await Contents.find({
+        select: [
+        'id',
+        "title",
+        "imgUrl",
+        "createdAt"
+        ],
+    order: {
+        createdAt: "ASC",
+    },
+        skip: skip,
+        take: 9,
+      })
+      //getConent`s Nickname By Usersnickname
+      for (let i : number = 0 ; i < allContent.length ; i++){
+        const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(allContent[i].id);
+        const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
+        allContent[i].nickname = getContentUser.nickname
+
+      }
+
+        let result = [
+              ...allContent
+        ]
+        res
+          .status(200)
+          .send({
+            data : {
+              orderByRecent:result
+            },
+          })
+
+    } catch(e) {
+      throw new Error(e)
+    }
+
+  },
   
   postComment: async (req: Request, res: Response) => {
     try {

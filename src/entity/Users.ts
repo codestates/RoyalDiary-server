@@ -1,3 +1,4 @@
+import { Number } from "aws-sdk/clients/iot";
 import {
   Entity,
   Column,
@@ -67,6 +68,12 @@ export class Users extends BaseEntity {
     return this.createQueryBuilder("users")
       .where("users.id = :id", { id })
       .getOne();
+  }
+  static findNicknameByContentsId(id: number): Promise<Users | undefined> {
+    return this.createQueryBuilder("users")
+    .select("nickname")  
+    .where("users.id = :id", { id })
+    .getRawOne();
   }
   // static insertNewUser(
   //     name: string,

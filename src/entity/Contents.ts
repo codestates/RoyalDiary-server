@@ -58,6 +58,29 @@ export class Contents extends BaseEntity {
   /* contents(one) & comment(many) */
   @ManyToOne((type) => Users, (users) => users.id, { onDelete: "CASCADE" })
   user: Contents;
+/*
+          'id',
+          'title',
+          'content',
+          'thumbnail_url',
+          'createdAt',
+          'views',
+          'userId',
+          'categoryId',
+
+ static findContentsByContentId(skip: number):Promise<Contents[] | undefined> {
+    return (
+      this.createQueryBuilder("contents")
+        .select("id", "contents")
+        .addSelect("title")
+        .addSelect("content")
+        .addSelect("stampId")
+        .addSelect("userId")
+        .where("comments.content = :content", { content })
+        .getRawMany()
+    );
+*/
+ 
 
   static findByContentsId(id: number) {
     return this.createQueryBuilder("contents")
@@ -70,6 +93,14 @@ export class Contents extends BaseEntity {
       .where("contents.id = :id", { id })
       .getRawOne();
   }
+  /*
+  static findNicknameByContentsId(id: number) {
+    return this.createQueryBuilder("contents")
+      .select("nickname")
+      .where("contents.id = :id", { id })
+      .getRawOne();
+  }
+  */
   static deleteByContentsId(id: number) {
     return this.createQueryBuilder("contents")
       .delete()
@@ -77,6 +108,8 @@ export class Contents extends BaseEntity {
       .where("id = :id", { id })
       .execute();
   }
+
+
   static insertNewContent(
     title: string,
     content: string,
