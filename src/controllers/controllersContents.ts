@@ -133,17 +133,14 @@ const controllers = {
         skip: skip,
         take: 9,
       })
-      //getConent`s Nickname By Usersnickname
+      //getConent`s Nickname By User`s Nickname
       for (let i : number = 0 ; i < allContent.length ; i++){
         const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(allContent[i].id);
         const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
         allContent[i].nickname = getContentUser.nickname
-
       }
 
-        let result = [
-              ...allContent
-        ]
+        let result = [...allContent]
         res
           .status(200)
           .send({
