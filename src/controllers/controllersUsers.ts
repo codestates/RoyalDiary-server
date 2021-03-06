@@ -145,11 +145,11 @@ const users = {
 
   postLogout: async (req: Request, res: Response) => {
     try {
-      const isRealUser: any = await Users.findOne({
-        email: isAuthorized(req).email,
-      });
-      if (isRealUser) {
-        res.clearCookie("refreshToken").status(200).send({ message: "ok" });
+      const authorization = req.headers["authorization"];
+      if (authorization) {
+        res.clearCookie("refreshToken").status(200).send({"message": "successfully signed out!"});
+      } else {
+        res.status(404).send({ message: "no accesstoken" });
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
