@@ -49,7 +49,7 @@ export class Comments extends BaseEntity {
         .addSelect("createdAt")
         .addSelect("updatedAt")
         .addSelect("stampId")
-        .addSelect("content")
+        .addSelect("text")
         .addSelect("userId")
         .where("comments.content = :content", { content })
         .getRawMany()
