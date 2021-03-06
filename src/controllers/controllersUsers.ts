@@ -108,19 +108,20 @@ const users = {
 
   postLogin: async (req: Request, res: Response) => {
     try {
-      const findUser: any = await Users.findOne({
-        email: req.body.email,
-        password: req.body.password,
+      const isEmail: any = await Users.findOne({
+        email: req.body.email
       });
-      console.log(findUser);
-      if (!findUser) {
-        res.status(404).send({ message: "can't find user" });
+      
+      if(!isEmail){
+        res.status(404).send({"message": "email not found"});
+      }else if (isEmail.password !== req.body.password) {
+        res.status(404).send({"message": "wrong password"});
       } else {
         const userInfo = {
-          name: findUser.name,
-          nickname: findUser.nickname,
-          email: findUser.email,
-          mobile: findUser.mobile,
+          name: isEmail.name,
+          nickname: isEmail.nickname,
+          email: isEmail.email,
+          mobile: isEmail.mobile,
         };
         const accessToken = generateAccessToken(userInfo);
         const refreshToken = generateRefreshToken(userInfo);
@@ -130,7 +131,7 @@ const users = {
           })
           .send({
             data: {
-              nickname: findUser.nickname,
+              nickname: isEmail.nickname,
               accessToken: accessToken,
             },
             message: "ok",
