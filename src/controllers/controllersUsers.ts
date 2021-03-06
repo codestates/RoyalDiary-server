@@ -145,7 +145,7 @@ const users = {
 
   postLogout: async (req: Request, res: Response) => {
     try {
-      const authorization = req.headers["authorization"];
+      const authorization: string|undefined = req.headers["authorization"];
       if (authorization) {
         res.clearCookie("refreshToken").status(200).send({"message": "successfully signed out!"});
       } else {
