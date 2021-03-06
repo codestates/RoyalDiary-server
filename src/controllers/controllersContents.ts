@@ -48,9 +48,12 @@ const controllers = {
   },
   getContent: async (req: Request, res: Response) => {
     try{
-      const findId: any = await Contents.findSelectByContentsId(req.body.contentId);
-      const getComment: any = await Comments.findCommentByContentId(req.body.contentId);
-      const getContent: any = await Contents.findByContentsId(req.body.contentId);
+      const contentId: number = Number(req.query.contentId)
+      console.log(contentId);
+      console.log("----00000------------------------")
+      const findId: any = await Contents.findSelectByContentsId(contentId);
+      const getComment: any = await Comments.findCommentByContentId(contentId);
+      const getContent: any = await Contents.findByContentsId(contentId);
       const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(getContent.id);
       const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
 

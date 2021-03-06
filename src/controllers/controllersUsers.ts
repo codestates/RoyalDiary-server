@@ -92,13 +92,13 @@ const users = {
       const nickname: string = req.body.nickname;
       if(email) {
         const isEmail: Users | undefined = await Users.findOne({email: email});
-        isEmail ? res.send({email: true}) : res.send({email: false});
+        isEmail ? res.send({"message": "email already exists"}) : res.send({"message": "email is usable"});
       } else if(mobile) {
         const isMobile: Users | undefined = await Users.findOne({mobile: mobile});
-        isMobile ? res.send({mobile: true}) : res.send({mobile: false});
+        isMobile ? res.send({"message": "mobile already exists"}) : res.send({"message": "mobile is usable"});
       } else if(nickname) {
         const isNickname: Users | undefined = await Users.findOne({nickname: nickname});
-        isNickname ? res.send({nickname: true}) : res.send({nickname: false});
+        isNickname ? res.send({"message": "nickname already exists"}) : res.send({"message": "nickname is usable"});
       }
     } catch(e) {
       res.status(500).send({ message: "err" });
@@ -108,19 +108,20 @@ const users = {
 
   postLogin: async (req: Request, res: Response) => {
     try {
-      const findUser: any = await Users.findOne({
-        email: req.body.email,
-        password: req.body.password,
+      const isEmail: any = await Users.findOne({
+        email: req.body.email
       });
-      console.log(findUser);
-      if (!findUser) {
-        res.status(404).send({ message: "can't find user" });
+      
+      if(!isEmail){
+        res.status(404).send({"message": "email not found"});
+      }else if (isEmail.password !== req.body.password) {
+        res.status(404).send({"message": "wrong password"});
       } else {
         const userInfo = {
-          name: findUser.name,
-          nickname: findUser.nickname,
-          email: findUser.email,
-          mobile: findUser.mobile,
+          name: isEmail.name,
+          nickname: isEmail.nickname,
+          email: isEmail.email,
+          mobile: isEmail.mobile,
         };
         const accessToken = generateAccessToken(userInfo);
         const refreshToken = generateRefreshToken(userInfo);
@@ -130,7 +131,7 @@ const users = {
           })
           .send({
             data: {
-              nickname: findUser.nickname,
+              nickname: isEmail.nickname,
               accessToken: accessToken,
             },
             message: "ok",
@@ -144,11 +145,11 @@ const users = {
 
   postLogout: async (req: Request, res: Response) => {
     try {
-      const isRealUser: any = await Users.findOne({
-        email: isAuthorized(req).email,
-      });
-      if (isRealUser) {
-        res.clearCookie("refreshToken").status(200).send({ message: "ok" });
+      const authorization: string|undefined = req.headers["authorization"];
+      if (authorization) {
+        res.clearCookie("refreshToken").status(200).send({"message": "successfully signed out!"});
+      } else {
+        res.status(404).send({ message: "no accesstoken" });
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
@@ -164,7 +165,7 @@ const users = {
 
   getCalendar: async (req: Request, res: Response) => {
     try {
-      const findByCreatedAt = await Contents.findByCreatedAt(req.body.date);
+      const findByCreatedAt = await Contents.findByCreatedAt(req.query.date as string);
       if (findByCreatedAt.length === 0) {
         res.status(404).send({ message: "err" });
       } else {
@@ -179,7 +180,7 @@ const users = {
 /*
   getMcalendar: async (req: Request, res: Response) => {
     try {
-      const findByMonth = await Contents.findByMonth(req.body.date);
+      const findByMonth = await Contents.findByMonth(req.query.date as string);
       if (findByMonth.length === 0) {
         res.status(404).send({ message: "err" });
       } else {
