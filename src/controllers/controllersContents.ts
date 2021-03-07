@@ -164,7 +164,7 @@ const controllers = {
         allContentOrderByLikes[i].nickname = getContentUserOrderByViews.nickname
       }
 
-        const orderByRecent = [...allContentOrderByLikes]
+        const orderByRecent = [...allContentOrderByRecent]
         const orderByLikes = [...allContentOrderByLikes]
         res
           .status(200)
