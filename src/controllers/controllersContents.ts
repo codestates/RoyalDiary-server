@@ -133,7 +133,7 @@ const controllers = {
       order: {
         createdAt: "ASC",
     },
-        skip: skip,
+        skip,
         take: 9,
       })
 
@@ -142,27 +142,36 @@ const controllers = {
         'id',
         "title",
         "imgUrl",
-        "createdAt"
+        "createdAt",
+        "views"
         ],
       order: {
-        createdAt: "ASC",
+        views: "DESC",
     },
-        skip: skip,
+        skip,
         take: 9,
       })
       //getConent`s Nickname By User`s Nickname
       for (let i : number = 0 ; i < allContentOrderByRecent.length ; i++){
-        const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(allContentOrderByRecent[i].id);
-        const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
-        allContentOrderByRecent[i].nickname = getContentUser.nickname
+
+        const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(allContentOrderByRecent[i].id);
+        const getUserIdByContentsIdOrderByViews : any = await Contents.findUserIdByContentsId(allContentOrderByLikes[i].id);
+
+        const getContentUserOrderByCreatedAt: any = await Users.findById(getUserIdByContentsIdOrderByCreateAt.userId)
+        const getContentUserOrderByViews : any = await Users.findById(getUserIdByContentsIdOrderByViews.userId)
+
+        allContentOrderByRecent[i].nickname = getContentUserOrderByCreatedAt.nickname
+        allContentOrderByLikes[i].nickname = getContentUserOrderByViews.nickname
       }
 
-        const orderByRecent = [...allContentOrderByRecent]
+        const orderByRecent = [...allContentOrderByLikes]
+        const orderByLikes = [...allContentOrderByLikes]
         res
           .status(200)
           .send({
             data : {
-              orderByRecent
+              orderByRecent,
+              orderByLikes
             },
           })
 
