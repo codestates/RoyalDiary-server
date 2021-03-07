@@ -115,7 +115,7 @@ const controllers = {
     } 
   },
   getPubliccontents: async (req: Request, res: Response) => {
-    //const getPublicContents: any = await Contents.findContentsByPage(req.query.page);
+    //page nation
     const pageNum : any = req.query.page;
     let skip : number = 0;
 
@@ -123,32 +123,46 @@ const controllers = {
       if (pageNum> 1) {
         skip = 9 * (pageNum -1);
       }
-      const allContent : any = await Contents.find({
+      const allContentOrderByRecent : any = await Contents.find({
         select: [
         'id',
         "title",
         "imgUrl",
         "createdAt"
         ],
-    order: {
+      order: {
+        createdAt: "ASC",
+    },
+        skip: skip,
+        take: 9,
+      })
+
+      const allContentOrderByLikes : any = await Contents.find({
+        select: [
+        'id',
+        "title",
+        "imgUrl",
+        "createdAt"
+        ],
+      order: {
         createdAt: "ASC",
     },
         skip: skip,
         take: 9,
       })
       //getConent`s Nickname By User`s Nickname
-      for (let i : number = 0 ; i < allContent.length ; i++){
-        const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(allContent[i].id);
+      for (let i : number = 0 ; i < allContentOrderByRecent.length ; i++){
+        const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(allContentOrderByRecent[i].id);
         const getContentUser: any = await Users.findById(getUserIdByContentsId.userId)
-        allContent[i].nickname = getContentUser.nickname
+        allContentOrderByRecent[i].nickname = getContentUser.nickname
       }
 
-        let result = [...allContent]
+        const orderByRecent = [...allContentOrderByRecent]
         res
           .status(200)
           .send({
             data : {
-              orderByRecent:result
+              orderByRecent
             },
           })
 

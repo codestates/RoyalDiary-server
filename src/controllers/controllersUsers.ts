@@ -177,7 +177,7 @@ const users = {
       throw new Error(e);
     }
   },
-/*
+
   getMcalendar: async (req: Request, res: Response) => {
     try {
       const findByMonth = await Contents.findByMonth(req.query.date as string);
@@ -191,7 +191,7 @@ const users = {
       throw new Error(e);
     }
   },
-*/
+
   getMypage: async (req: Request, res: Response) => {
     try {
       if (isAuthorized(req) === null) {
