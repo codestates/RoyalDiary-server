@@ -115,16 +115,17 @@ const controllers = {
   },
   getContents: async (req: Request, res: Response) => {
     try {
-      //!여기부터
-      if(isAuthorized(req)) {
+      if (isAuthorized(req)) {
         const findUser: any = await Users.findUser(isAuthorized(req).email);
         const pageNum: any = req.query.page;
         let skip: number = 0;
         if (pageNum > 1) {
-          skip = 9 * (pageNum - 1);
+            skip = 9 * (pageNum - 1);
         }
+        console.log(await Contents.findUserIdByContentsId(2))
+        console.log("--------------")
         const allContentOrderByRecent: any = await Contents.find({
-          where: {userId: findUser.id},
+          where: { user: findUser.id },
           select: ["title", "imgUrl", "createdAt", "updatedAt"],
           order: {
             createdAt: "DESC",
@@ -133,7 +134,7 @@ const controllers = {
           take: 9,
         });
         const allContentOrderByLikes: any = await Contents.find({
-          where: {userId: findUser.id},
+          where: { user: findUser.id },
           select: ["title", "imgUrl", "createdAt", "updatedAt"],
           order: {
             views: "DESC",
@@ -141,41 +142,28 @@ const controllers = {
           skip,
           take: 9,
         });
-        for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
-          const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
-            allContentOrderByRecent[i].id
-          );
-          const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
-            allContentOrderByLikes[i].id
-          );
+        if(allContentOrderByRecent) {
+          for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
+            allContentOrderByRecent[i].nickname = findUser.nickname;
+            allContentOrderByLikes[i].nickname = findUser.nickname;
+          }
 
-          const getContentUserOrderByCreatedAt: any = await Users.findById(
-            getUserIdByContentsIdOrderByCreateAt.userId
-          );
-          const getContentUserOrderByViews: any = await Users.findById(
-            getUserIdByContentsIdOrderByViews.userId
-          );
-
-          allContentOrderByRecent[i].nickname =
-            getContentUserOrderByCreatedAt.nickname;
-          allContentOrderByLikes[i].nickname =
-            getContentUserOrderByViews.nickname;
+          const orderByRecent = [...allContentOrderByRecent];
+          const orderByLikes = [...allContentOrderByLikes];
+          const count = await Contents.count();
+          res.status(200).send({
+            data: {
+              orderByRecent,
+              orderByLikes,
+              count,
+            },
+          });
+        } else {
+          res.status(204);
         }
-
-        const orderByRecent = [...allContentOrderByRecent];
-        const orderByLikes = [...allContentOrderByLikes];
-        const count = await Contents.count();
-        res.status(200).send({
-          data: {
-            orderByRecent,
-            orderByLikes,
-            count
-          },
-        });
+      } else {
+        res.status(404).send({message: "error"})
       }
-      
-      
-
     } catch (e) {
       throw new Error(e);
     }
@@ -264,84 +252,84 @@ const controllers = {
 
   postComment: async (req: Request, res: Response) => {
     try {
-      // const refreshToken = req.cookies.refreshToken;
-      // if (isAuthorized(req)) {
-      //   const findUserId: any = await Users.findOne({
-      //     email: isAuthorized(req).email,
-      //   });
-      //   const comment = new Comments();
-      //   comment.text = req.body.text;
-      //   comment.user = findUserId.id;
-      //   comment.stamp = req.body.stampId;
-      //   comment.content = req.body.contentId;
-      //   await comment.save();
-      //   console.log("------------------------");
-      //   console.log(comment);
-      //   res.send({
-      //     message: "ok",
-      //     data: {
-      //       commentInfo: {
-      //         id: comment.content,
-      //         userId: comment.user,
-      //         nickname: isAuthorized(req).nickname,
-      //         createdAt: comment.createdAt,
-      //         updatedAt: comment.updatedAt,
-      //         text: comment.text,
-      //         stampId: comment.stamp,
-      //       },
-      //     },
-      //   });
-      // } else if (refreshToken) {
-      //   const verifyRefreshToken: {
-      //     name: string;
-      //     nickname: string;
-      //     email: string;
-      //     mobile: string;
-      //     iat?: number;
-      //     exp?: number;
-      //   } = checkRefeshToken(refreshToken);
-      //   const userEmail: string = verifyRefreshToken.email;
-      //   const isTampered: any = await Users.findUser(userEmail); //true: 조작안됨, false: 조작됨
-      //   const findUserIdByrefreshToken: any = await Users.findOne({
-      //     email: verifyRefreshToken.email,
-      //   });
-      //   console.log(typeof verifyRefreshToken.email);
-      //   if (!isTampered) {
-      //     res.status(401).send({ message: "refresh token has been tampered" });
-      //   } else {
-      //     const userInfo = {
-      //       name: verifyRefreshToken.name,
-      //       nickname: verifyRefreshToken.nickname,
-      //       email: verifyRefreshToken.email,
-      //       mobile: verifyRefreshToken.mobile,
-      //     };
-      //     const accessToken: string = generateAccessToken(userInfo);
-      //     console.log("hello");
-      //     const comment = new Comments();
-      //     comment.text = req.body.text;
-      //     comment.user = findUserIdByrefreshToken.id;
-      //     comment.stamp = req.body.stampId;
-      //     comment.content = req.body.contentId;
-      //     await comment.save();
-      //     res.status(200).send({
-      //       message: "New AccessToken, please restore and request again",
-      //       data: {
-      //         accessToken: accessToken,
-      //         commentInfo: {
-      //           id: comment.content,
-      //           userId: comment.user,
-      //           nickname: findUserIdByrefreshToken.nickname,
-      //           createdAt: comment.createdAt,
-      //           updatedAt: comment.updatedAt,
-      //           text: comment.text,
-      //           stampId: comment.stamp,
-      //         },
-      //       },
-      //     });
-      //   }
-      // } else {
-      //   res.send({ message: "not authorized" });
-      // }
+      const refreshToken = req.cookies.refreshToken;
+      if (isAuthorized(req)) {
+        const findUserId: any = await Users.findOne({
+          email: isAuthorized(req).email,
+        });
+        const comment = new Comments();
+        comment.text = req.body.text;
+        comment.user = findUserId.id;
+        comment.stamp = req.body.stampId;
+        comment.content = req.body.contentId;
+        await comment.save();
+        console.log("------------------------");
+        console.log(comment);
+        res.send({
+          message: "ok",
+          data: {
+            commentInfo: {
+              id: comment.content,
+              userId: comment.user,
+              nickname: isAuthorized(req).nickname,
+              createdAt: comment.createdAt,
+              updatedAt: comment.updatedAt,
+              text: comment.text,
+              stampId: comment.stamp,
+            },
+          },
+        });
+      } else if (refreshToken) {
+        const verifyRefreshToken: {
+          name: string;
+          nickname: string;
+          email: string;
+          mobile: string;
+          iat?: number;
+          exp?: number;
+        } = checkRefeshToken(refreshToken);
+        const userEmail: string = verifyRefreshToken.email;
+        const isTampered: any = await Users.findUser(userEmail); //true: 조작안됨, false: 조작됨
+        const findUserIdByrefreshToken: any = await Users.findOne({
+          email: verifyRefreshToken.email,
+        });
+        console.log(typeof verifyRefreshToken.email);
+        if (!isTampered) {
+          res.status(401).send({ message: "refresh token has been tampered" });
+        } else {
+          const userInfo = {
+            name: verifyRefreshToken.name,
+            nickname: verifyRefreshToken.nickname,
+            email: verifyRefreshToken.email,
+            mobile: verifyRefreshToken.mobile,
+          };
+          const accessToken: string = generateAccessToken(userInfo);
+          console.log("hello");
+          const comment = new Comments();
+          comment.text = req.body.text;
+          comment.user = findUserIdByrefreshToken.id;
+          comment.stamp = req.body.stampId;
+          comment.content = req.body.contentId;
+          await comment.save();
+          res.status(200).send({
+            message: "New AccessToken, please restore and request again",
+            data: {
+              accessToken: accessToken,
+              commentInfo: {
+                id: comment.content,
+                userId: comment.user,
+                nickname: findUserIdByrefreshToken.nickname,
+                createdAt: comment.createdAt,
+                updatedAt: comment.updatedAt,
+                text: comment.text,
+                stampId: comment.stamp,
+              },
+            },
+          });
+        }
+      } else {
+        res.send({ message: "not authorized" });
+      }
     } catch (e) {
       res.status(500).send({ message: "err" });
     }

@@ -57,7 +57,7 @@ export class Contents extends BaseEntity {
 
   /* contents(one) & comment(many) */
   @ManyToOne((type) => Users, (users) => users.id, { onDelete: "CASCADE" })
-  user: Contents;
+  user: Users;
 /*
           'id',
           'title',
