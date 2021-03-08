@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   BaseEntity,
+  JoinColumn
 } from "typeorm";
 import { Users } from "./Users";
 import { Stamps } from "./Stamps";
@@ -25,14 +26,17 @@ export class Comments extends BaseEntity {
 
   /* users(one) & comment(many) */
   @ManyToOne((type) => Users, (users) => users.id)
+  @JoinColumn({name: 'userId'})
   user: Users;
 
   /* stamps(one) & comment(many) */
   @ManyToOne((type) => Stamps, (stamps) => stamps.id)
+  @JoinColumn({name: 'stampId'})
   stamp: Stamps;
 
   /* contents(one) & comment(many) */
   @ManyToOne((type) => Contents, (contents) => contents.id)
+  @JoinColumn({name: 'contentId'})
   content: Contents;
 
   static deleteByCommentId(id: number) {
@@ -59,5 +63,10 @@ export class Comments extends BaseEntity {
         LEFT JOIN comment.userId 
         WHERE comments.contentId = :contentId 
         */
+  }
+  static findById(id: number) {
+    return this.createQueryBuilder("comments")
+      .where("comments.id = :id", { id })
+      .getOne()
   }
 }
