@@ -16,6 +16,10 @@ const controllers = {
   postCcontet: async (req: Request, res: Response) => {
 
     try {
+<<<<<<< HEAD
+=======
+
+>>>>>>> ac7fbaece677696067cf088a29b2aabc0c1788f9
       const accessTokenData = isAuthorized(req);
       const refreshToken = req.cookies.refreshToken
       const findUser: any = await Users.findUser(isAuthorized(req).email);
@@ -65,6 +69,10 @@ const controllers = {
     }
      catch(e) {
       throw new Error(e)
+<<<<<<< HEAD
+=======
+
+>>>>>>> ac7fbaece677696067cf088a29b2aabc0c1788f9
     }
 
   },
