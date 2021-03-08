@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.post("/ccontent", controller.postCcontet);
 
-//router.get("/contents", controller.getContents);
-
 router.get("/content", controller.getContent);
+
+router.get("/contents", controller.getContents);
 
 // router.patch("/ucontent", controller.patchUcontent);
 
