@@ -131,7 +131,7 @@ const controllers = {
         "createdAt"
         ],
       order: {
-        createdAt: "ASC",
+        createdAt: "DESC",
     },
         skip,
         take: 9,
