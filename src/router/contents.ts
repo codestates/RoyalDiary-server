@@ -10,7 +10,7 @@ router.post("/ccontent", controller.postCcontet);
 
 router.get("/content", controller.getContent);
 
-//router.patch("/ucontent", controller.patchUcontent);
+// router.patch("/ucontent", controller.patchUcontent);
 
 router.delete("/dcontent", controller.delDcontent);
 
@@ -18,7 +18,7 @@ router.post("/comment", controller.postComment);
 
 router.get("/publiccontents",controller.getPubliccontents); //postman test : GET, http://localhost:4000/contents/publiccontents?page=1
 
-//router.patch("/ucomment", controller.patchUcomment);
+router.patch("/ucomment", controller.patchUcomment);
 
 router.delete("/dcomment",controller.delDcomment);
 
