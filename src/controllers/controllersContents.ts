@@ -5,6 +5,7 @@ import { Users } from "../entity/Users";
 import { Stamps } from "../entity/Stamps";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
+import { AnyARecord } from "node:dns";
 const { isAuthorized, generateAccessToken, checkRefeshToken } = require("./token");
 
 const controllers = {
@@ -117,7 +118,72 @@ const controllers = {
       throw new Error(e)
     } 
   },
-  getPubliccontents: async (req: Request, res: Response) => {},
+  getPubliccontents: async (req: Request, res: Response) => {
+    //page nation
+    const pageNum : any = req.query.page;
+    let skip : number = 0;
+
+    try {
+      if (pageNum> 1) {
+        skip = 9 * (pageNum -1);
+      }
+      const allContentOrderByRecent : any = await Contents.find({
+        select: [
+        'id',
+        "title",
+        "imgUrl",
+        "createdAt"
+        ],
+      order: {
+        createdAt: "DESC",
+    },
+        skip,
+        take: 9,
+      })
+
+      const allContentOrderByLikes : any = await Contents.find({
+        select: [
+        'id',
+        "title",
+        "imgUrl",
+        "createdAt",
+        "views"
+        ],
+      order: {
+        views: "DESC",
+    },
+        skip,
+        take: 9,
+      })
+      //getConent`s Nickname By User`s Nickname
+      for (let i : number = 0 ; i < allContentOrderByRecent.length ; i++){
+
+        const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(allContentOrderByRecent[i].id);
+        const getUserIdByContentsIdOrderByViews : any = await Contents.findUserIdByContentsId(allContentOrderByLikes[i].id);
+
+        const getContentUserOrderByCreatedAt: any = await Users.findById(getUserIdByContentsIdOrderByCreateAt.userId)
+        const getContentUserOrderByViews : any = await Users.findById(getUserIdByContentsIdOrderByViews.userId)
+
+        allContentOrderByRecent[i].nickname = getContentUserOrderByCreatedAt.nickname
+        allContentOrderByLikes[i].nickname = getContentUserOrderByViews.nickname
+      }
+
+        const orderByRecent = [...allContentOrderByRecent]
+        const orderByLikes = [...allContentOrderByLikes]
+        res
+          .status(200)
+          .send({
+            data : {
+              orderByRecent,
+              orderByLikes
+            },
+          })
+
+    } catch(e) {
+      throw new Error(e)
+    }
+
+  },
   
   postComment: async (req: Request, res: Response) => {
     try {
