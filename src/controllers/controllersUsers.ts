@@ -49,15 +49,6 @@ const users = {
         user.email = req.body.email;
         user.mobile = req.body.mobile;
         await user.save();
-        //혹은 Users 엔티티에 입력한 메소드를 사용해서
-        // await Users.insertNewUser(
-        // req.body.name,
-        // req.body.nickname,
-        // req.body.password,
-        // req.body.email,
-        // req.body.mobile
-        //     )
-        //insertUser;
 
         const userInfo = {
           name: req.body.name,
@@ -65,8 +56,8 @@ const users = {
           email: req.body.email,
           mobile: req.body.mobile,
         };
-        const accessToken = generateAccessToken(userInfo);
-        const refreshToken = generateRefreshToken(userInfo);
+        const accessToken: string | undefined = generateAccessToken(userInfo);
+        const refreshToken: string | undefined  = generateRefreshToken(userInfo);
 
         res
           .cookie("refreshToken", refreshToken, {
