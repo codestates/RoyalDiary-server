@@ -16,7 +16,6 @@ const controllers = {
   postCcontet: async (req: Request, res: Response) => {
 
     try {
-<<<<<<< HEAD
       const accessTokenData = isAuthorized(req);
       const refreshToken = req.cookies.refreshToken
       const findUser: any = await Users.findUser(isAuthorized(req).email);
@@ -66,34 +65,6 @@ const controllers = {
     }
      catch(e) {
       throw new Error(e)
-=======
-      const refreshToken = req.cookies.refreshToken;
-
-      if (!refreshToken) {
-        res.status(401).send({ message: "refresh token has been tempered" });
-      } else if (!checkRefeshToken(refreshToken)) {
-        const checkRefreshToken = checkRefeshToken(refreshToken);
-        res.status(201).send({
-          data: {
-            accessToken: generateAccessToken(checkRefreshToken),
-          },
-          message: "New AccessToken, please restore and request again",
-        });
-      } else {
-        await Contents.insertNewContent(
-          req.body.title,
-          req.body.content,
-          req.body.weather,
-          req.body.emotion,
-          req.body.imgUrl,
-          req.body.imgMain,
-          req.body.isPublic
-        );
-        res.status(200).send("message : ok");
-      }
-    } catch (e) {
-      throw new Error(e);
->>>>>>> 0a60b66b57ef7d8cd4ea34c41d6eb8d92712e75f
     }
 
   },
