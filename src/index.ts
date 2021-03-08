@@ -41,10 +41,19 @@ const upload = multer({
     s3: new AWS.S3(),
     bucket: 'royaldiarymulter',
     acl: 'public-read',
-    key: function (req: Request, file: any, cb: Function) {
-      let extension: string = path.extname(file.originalname);
-      cb(null, Date.now().toString() + extension);
+    key: async (req: Request, file: any, cb: Function) => {
+      try {
+        let extension: string = await path.extname(file.originalname);
+        cb(null, Date.now().toString() + extension);
+      } catch(e) {
+        throw new Error(e);
+      }
     },
+    //!멀터에 에러핸들링 문제로 오류가 나타난다는 글을 봐서 수정해놓는다. 에러가 계속 일어난다면 원래대로 되돌릴 것
+    // key: function (req: Request, file: any, cb: Function) {
+    //   let extension: string = path.extname(file.originalname);
+    //   cb(null, Date.now().toString() + extension);
+    // },
   }),
   limits: { fieldSize: 5 * 1024 * 1024 },//파일사이즈 제한
 });
