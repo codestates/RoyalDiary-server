@@ -80,7 +80,7 @@ export class Contents extends BaseEntity {
         .getRawMany()
     );
 */
- 
+   
 
   static findByContentsId(id: number) {
     return this.createQueryBuilder("contents")

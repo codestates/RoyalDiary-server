@@ -14,34 +14,61 @@ const {
 
 const controllers = {
   postCcontet: async (req: Request, res: Response) => {
-    try {
-      const refreshToken = req.cookies.refreshToken;
 
-      if (!refreshToken) {
-        res.status(401).send({ message: "refresh token has been tempered" });
-      } else if (!checkRefeshToken(refreshToken)) {
-        const checkRefreshToken = checkRefeshToken(refreshToken);
-        res.status(201).send({
-          data: {
-            accessToken: generateAccessToken(checkRefreshToken),
-          },
-          message: "New AccessToken, please restore and request again",
-        });
-      } else {
-        await Contents.insertNewContent(
-          req.body.title,
-          req.body.content,
-          req.body.weather,
-          req.body.emotion,
-          req.body.imgUrl,
-          req.body.imgMain,
-          req.body.isPublic
-        );
+    try {
+
+      const accessTokenData = isAuthorized(req);
+      const refreshToken = req.cookies.refreshToken
+      const findUser: any = await Users.findUser(isAuthorized(req).email);
+      console.log(findUser)
+
+      //has accessToken
+      //200
+
+      //!accessToken
+      //check refreshToken
+      //has refreshToken => (201) add accessToken
+      //!refreshToken => (404)
+
+      if (accessTokenData) {
+        // const newContent : any = await Contents.insertNewContent(
+        //   req.body.title,
+        //   req.body.content,
+        //   req.body.weather,
+        //   req.body.emotion,
+        //   req.body.imgUrl,
+        //   req.body.imgMain,
+        //   req.body.isPublic
+        // );
+        const newContent :any = new Contents();
+        newContent.userId = findUser.id;
+        newContent.title = req.body.title;
+        newContent.content = req.body.content;
+        newContent.weather = req.body.weather;
+        newContent.emotion = req.body.emotion;
+        newContent.imgUrl = req.body.imgUrl;
+        newContent.imgMain = req.body.imgMain;
+        newContent.isPublic = req.body.isPublic
+        await newContent.save();
+        console.log(findUser.id)
+        console.log(newContent)
+  
+        //newContent.userId = findUser.id
+  
+        //console.log(newContent)
+        res.send({message : "ok"})
+             
+        if (!newContent) {
+          res.status(401).send('access token has been tampered');
+        }
         res.status(200).send("message : ok");
-      }
-    } catch (e) {
-      throw new Error(e);
+      } 
     }
+     catch(e) {
+      throw new Error(e)
+
+    }
+
   },
   getContent: async (req: Request, res: Response) => {
     try {
