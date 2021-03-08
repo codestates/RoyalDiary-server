@@ -68,19 +68,4 @@ export class Users extends BaseEntity {
       .where("users.id = :id", { id })
       .getOne();
   }
-  // static insertNewUser(
-  //     name: string,
-  //     nickname: string,
-  //     password: string,
-  //     email: string,
-  //     mobile: string
-  //     ):Promise<InsertResult | undefined> {
-  //     return this.createQueryBuilder()
-  //         .insert()
-  //         .into(Users)
-  //         .values([
-  //             {name, nickname, password, email, mobile}
-  //         ])
-  //         .execute();
-  // }
 }

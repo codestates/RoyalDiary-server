@@ -41,9 +41,13 @@ const controllers = {
     }
   },
   getContents: async (req: Request, res: Response) => {
-    const contents = await getRepository(Contents).find();
-    console.log(contents);
-    res.send(contents);
+    try{
+      const contents = await getRepository(Contents).find();
+      console.log(contents);
+      res.send(contents);
+    } catch(e) {
+      throw new Error(e)
+    } 
   },
   getContent: async (req: Request, res: Response) => {
     try{
