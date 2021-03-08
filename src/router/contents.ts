@@ -10,7 +10,7 @@ router.get("/content", controller.getContent);
 
 router.get("/contents", controller.getContents);
 
-// router.patch("/ucontent", controller.patchUcontent);
+router.patch("/ucontent", controller.patchUcontent);
 
 router.delete("/dcontent", controller.delDcontent);
 
