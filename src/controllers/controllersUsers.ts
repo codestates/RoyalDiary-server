@@ -27,16 +27,9 @@ const {
 //         }
 //     }
 // }
-//!process.on 은 작동이 안 될 때만 사용할 것
-process.on("uncaughtException", (err) => {
-  console.error("죽지마 ㅠㅠ");
-  console.error(err);
-
-  process.exit(1);
-});
 
 const users = {
-  postSignup: async (req: Request, res: Response, next: NextFunction) => {
+  postSignup: async (req: Request, res: Response) => {
     const isMatchMobile = await Users.findByMobile(req.body.mobile);
     const isMatchEmail = await Users.findByEmail(req.body.email);
     const isMatchNickname = await Users.findByNickname(req.body.nickname);
@@ -64,7 +57,7 @@ const users = {
           mobile: req.body.mobile,
         };
         const accessToken: string | undefined = generateAccessToken(userInfo);
-        const refreshToken: string | undefined = generateRefreshToken(userInfo);
+        const refreshToken: string | undefined  = generateRefreshToken(userInfo);
 
         res
           .cookie("refreshToken", refreshToken, {
@@ -79,53 +72,41 @@ const users = {
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
-      next(e);
+      throw new Error(e);
     }
   },
 
-  matchInfo: async (req: Request, res: Response, next: NextFunction) => {
+  matchInfo: async (req: Request, res: Response) => {
     try {
       const email: string = req.body.email;
       const mobile: string = req.body.mobile;
       const nickname: string = req.body.nickname;
-      if (email) {
-        const isEmail: Users | undefined = await Users.findOne({
-          email: email,
-        });
-        isEmail
-          ? res.send({ message: "email already exists" })
-          : res.send({ message: "email is usable" });
-      } else if (mobile) {
-        const isMobile: Users | undefined = await Users.findOne({
-          mobile: mobile,
-        });
-        isMobile
-          ? res.send({ message: "mobile already exists" })
-          : res.send({ message: "mobile is usable" });
-      } else if (nickname) {
-        const isNickname: Users | undefined = await Users.findOne({
-          nickname: nickname,
-        });
-        isNickname
-          ? res.send({ message: "nickname already exists" })
-          : res.send({ message: "nickname is usable" });
+      if(email) {
+        const isEmail: Users | undefined = await Users.findOne({email: email});
+        isEmail ? res.send({"message": "email already exists"}) : res.send({"message": "email is usable"});
+      } else if(mobile) {
+        const isMobile: Users | undefined = await Users.findOne({mobile: mobile});
+        isMobile ? res.send({"message": "mobile already exists"}) : res.send({"message": "mobile is usable"});
+      } else if(nickname) {
+        const isNickname: Users | undefined = await Users.findOne({nickname: nickname});
+        isNickname ? res.send({"message": "nickname already exists"}) : res.send({"message": "nickname is usable"});
       }
-    } catch (e) {
+    } catch(e) {
       res.status(500).send({ message: "err" });
-      next(e);
+      throw new Error(e);
     }
   },
 
-  postLogin: async (req: Request, res: Response, next: NextFunction) => {
+  postLogin: async (req: Request, res: Response) => {
     try {
       const isEmail: any = await Users.findOne({
-        email: req.body.email,
+        email: req.body.email
       });
-
-      if (!isEmail) {
-        res.status(404).send({ message: "email not found" });
-      } else if (isEmail.password !== req.body.password) {
-        res.status(404).send({ message: "wrong password" });
+      
+      if(!isEmail){
+        res.status(404).send({"message": "email not found"});
+      }else if (isEmail.password !== req.body.password) {
+        res.status(404).send({"message": "wrong password"});
       } else {
         const userInfo = {
           name: isEmail.name,
@@ -149,18 +130,15 @@ const users = {
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
-      next(e);
+      throw new Error(e);
     }
   },
 
   postLogout: async (req: Request, res: Response) => {
     try {
-      const authorization: string | undefined = req.headers["authorization"];
+      const authorization: string|undefined = req.headers["authorization"];
       if (authorization) {
-        res
-          .clearCookie("refreshToken")
-          .status(200)
-          .send({ message: "successfully signed out!" });
+        res.clearCookie("refreshToken").status(200).send({"message": "successfully signed out!"});
       } else {
         res.status(404).send({ message: "no accesstoken" });
       }
@@ -178,9 +156,7 @@ const users = {
 
   getCalendar: async (req: Request, res: Response) => {
     try {
-      const findByCreatedAt = await Contents.findByCreatedAt(
-        req.query.date as string
-      );
+      const findByCreatedAt = await Contents.findByCreatedAt(req.query.date as string);
       if (findByCreatedAt.length === 0) {
         res.status(404).send({ message: "err" });
       } else {
@@ -201,7 +177,7 @@ const users = {
       } else {
         res.status(200).send({ data: findByMonth });
       }
-    } catch (e) {
+    } catch(e) {
       res.status(500).send({ message: "err" });
       throw new Error(e);
     }
@@ -235,31 +211,29 @@ const users = {
   delDuser: async (req: Request, res: Response) => {
     try {
       const refreshToken = req.cookies.refreshToken;
-      if (isAuthorized(req)) {
-        const { email } = isAuthorized(req);
+      if(isAuthorized(req)) {
+        const {email} = isAuthorized(req);
         await Users.findUser(email)
-          .then(async (data: any) => {
-            if (!data) {
-              res
-                .status(400)
-                .send({ message: "access token has been tampered" });
-            } else {
-              await Users.delete({ email });
-              res
-                .status(200)
-                .send({ message: "delete user information successfully" });
-            }
-          })
-          .catch((err: string) => console.log(err));
+        .then(async (data: any) => {
+          if(!data) {
+            res
+              .status(400)
+              .send({ message: "access token has been tampered"});
+          } else {
+            await Users.delete({ email });
+            res
+              .status(200)
+              .send({ message: "delete user information successfully" })
+          }
+        })
+        .catch((err: string) => console.log(err));
       } else {
         if (!refreshToken) {
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
           res
             .status(202)
-            .send({
-              message: "refresh token is outdated, pleaes log in again",
-            });
+            .send({ message: "refresh token is outdated, pleaes log in again" });
         } else {
           const { email } = checkRefeshToken(refreshToken);
           await Users.findUser(email)
