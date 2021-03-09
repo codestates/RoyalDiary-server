@@ -684,7 +684,7 @@ const controllers = {
           comment.content = req.body.contentId;
           comment.updatedAt = new Date();
           await comment.save().catch((err: string) => console.log(err));
-          res.status(200).send({
+          res.status(201).send({
             message: "New AccessToken, please restore and request again",
             data: {
               accessToken: accessToken,
