@@ -38,6 +38,7 @@ const controllers = {
         //   req.body.imgMain,
         //   req.body.isPublic
         // );
+        console.log("------")
         const newContent: any = new Contents();
         newContent.userId = findUser.id;
         newContent.title = req.body.title;
