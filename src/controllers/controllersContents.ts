@@ -47,7 +47,7 @@ const controllers = {
         newContent.imgUrl = req.body.imgUrl;
         newContent.imgMain = req.body.imgMain;
         newContent.isPublic = req.body.isPublic;
-        await newContent.save();
+        await newContent.save().catch((err: string) => console.log(err));
         console.log(findUser.id);
         console.log(newContent);
 
@@ -165,137 +165,158 @@ const controllers = {
   },
   patchUcontent: async (req: Request, res: Response) => {
     try {
-      const accessToken = req.headers.authorization ;
+      const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
-      if(accessToken) { //!액세스 토큰이 있고
-        const {email, nickname} = isAuthorized(req);
-        const findUser: any = await Users.findUser(email)
-        const findUserIdByContentsId = await Contents.findUserIdByContentsId(contentId);
+      if (accessToken) {
+        //!액세스 토큰이 있고
+        const { email, nickname } = isAuthorized(req);
+        const findUser: any = await Users.findUser(email);
+        const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+          contentId
+        );
         await Users.findUser(email)
-        .then(async (data: any) => {
-          if(data.id !== findUserIdByContentsId) {//!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
-            res
-              .status(400)
-              .send({ message: "access token has been tampered"});
-          } else { //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
-            
+          .then(async (data: any) => {
+            if (data.id !== findUserIdByContentsId) {
+              //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+              res
+                .status(400)
+                .send({ message: "access token has been tampered" });
+            } else {
+              //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
 
-            console.log(contentId);
-            console.log("----00000------------------------");
-            const getComment: any = await Comments.findCommentByContentId(contentId);
-            const getContent: any = await Contents.findByContentsId(contentId);
-            const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
-              getContent.id
-            );
-            const getContentUser: any = await Users.findById(
-              getUserIdByContentsId.userId
-            );
-            
-            getContent.userId = findUser.id;
-            getContent.title = req.body.title;
-            getContent.content = req.body.content;
-            getContent.weather = req.body.weather;
-            getContent.emotion = req.body.emotion;
-            getContent.imgUrl = req.body.imgUrl;
-            getContent.imgMain = req.body.imgMain;
-            getContent.isPublic = req.body.isPublic;
-            getContent.updatedAt = new Date();
-            await getContent.save();
-            console.log(req.body)
-            console.log(req.body.isPublic);
-            console.log(getContent);
-            console.log(getContent.isPublic)
+              console.log(contentId);
+              console.log("----00000------------------------");
+              const getComment: any = await Comments.findCommentByContentId(
+                contentId
+              );
+              const getContent: any = await Contents.findByContentsId(
+                contentId
+              );
+              const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
+                getContent.id
+              );
+              const getContentUser: any = await Users.findById(
+                getUserIdByContentsId.userId
+              );
 
-            getContent.nickname = getContentUser.nickname;
-            for (let i: number = 0; i < getComment.length; i++) {
-              await Users.findOne({ id: getComment[i].userId })
-                .then((data: any) => {
-                  getComment[i].nickname = data.nickname;
-                })
-                .catch((err) => console.log(err));
+              getContent.userId = findUser.id;
+              getContent.title = req.body.title;
+              getContent.content = req.body.content;
+              getContent.weather = req.body.weather;
+              getContent.emotion = req.body.emotion;
+              getContent.imgUrl = req.body.imgUrl;
+              getContent.imgMain = req.body.imgMain;
+              getContent.isPublic = req.body.isPublic;
+              getContent.updatedAt = new Date();
+              await getContent.save().catch((err: string) => console.log(err));
+              console.log(req.body);
+              console.log(req.body.isPublic);
+              console.log(getContent);
+              console.log(getContent.isPublic);
+
+              getContent.nickname = getContentUser.nickname;
+              for (let i: number = 0; i < getComment.length; i++) {
+                await Users.findOne({ id: getComment[i].userId })
+                  .then((data: any) => {
+                    getComment[i].nickname = data.nickname;
+                  })
+                  .catch((err: string) => console.log(err));
+              }
+              for (let i: number = 0; i < getComment.length; i++) {
+                const stampId: number = getComment[i].stampId;
+                await Stamps.findOne({ id: stampId })
+                  .then((data: any) => {
+                    getComment[i].stampUrl = data.imgUrl;
+                  })
+                  .catch((err) => console.log(err));
+              }
+
+              res.status(200).send({
+                data: {
+                  ...getContent,
+                  comments: [...getComment],
+                },
+                message: "successfully revised",
+              });
+
+              // res
+              //   .status(200)
+              //   .send({
+              //     data: {
+              // id: content.id,
+              // nickname: nickname,
+              // title: content.title,
+              // content: content.content,
+              // weather: content.weather,
+              // emotion: content.emotion,
+              // views: content.views,
+              // imgUrl: content.imgUrl,
+              // imgMain: content.imgMain,
+              // createdAt: content.createdAt,
+              // updatedAt: content.updatedAt,
+              //       comments: [
+              //                   {
+              //                     nickname: "nickname",
+              //                     commentId: "commentId",
+              //                     createdAt: "createdAt",
+              //                     updatedAt: "updatedAt",
+              //                     stampId: "stampId",
+              //                     stampUrl: "stampUrl"
+              //                   }
+              //         ]
+              //     },
+              //     message: "successfully revised"
+              //   })
             }
-            for (let i: number = 0; i < getComment.length; i++) {
-              const stampId: number = getComment[i].stampId;
-              await Stamps.findOne({ id: stampId })
-                .then((data: any) => {
-                  getComment[i].stampUrl = data.imgUrl;
-                })
-                .catch((err) => console.log(err));
-            }
-
-            res.status(200).send({
-              data: {
-                ...getContent,
-                comments: [...getComment],
-              },
-              message: "successfully revised"
-            });
-
-            // res
-            //   .status(200)
-            //   .send({ 
-            //     data: {
-                  // id: content.id,
-                  // nickname: nickname,
-                  // title: content.title,
-                  // content: content.content,
-                  // weather: content.weather,
-                  // emotion: content.emotion,
-                  // views: content.views,
-                  // imgUrl: content.imgUrl,
-                  // imgMain: content.imgMain,
-                  // createdAt: content.createdAt,
-                  // updatedAt: content.updatedAt,
-            //       comments: [
-            //                   {
-            //                     nickname: "nickname",
-            //                     commentId: "commentId",
-            //                     createdAt: "createdAt",
-            //                     updatedAt: "updatedAt",
-            //                     stampId: "stampId",
-            //                     stampUrl: "stampUrl"
-            //                   }
-            //         ]
-            //     },
-            //     message: "successfully revised"
-            //   })
-          }
-        })
-        .catch((err: string) => console.log(err));
-      } else {//!액세스 토큰이 없고
-        if (!refreshToken) {//!리프레시 토큰이 없는 경우 401
-          console.log(accessToken)
+          })
+          .catch((err: string) => console.log(err));
+      } else {
+        //!액세스 토큰이 없고
+        if (!refreshToken) {
+          //!리프레시 토큰이 없는 경우 401
+          console.log(accessToken);
           res.status(401).send({ message: "refresh token not provided" });
-        } else if (!checkRefeshToken(refreshToken)) {//!리프레시 토큰이 유효하지 않은 경우 202
+        } else if (!checkRefeshToken(refreshToken)) {
+          //!리프레시 토큰이 유효하지 않은 경우 202
           res
             .status(202)
-            .send({ message: "refresh token is outdated, pleaes log in again" });
-        } else {//!리프레시 토큰이 유효하고
+            .send({
+              message: "refresh token is outdated, pleaes log in again",
+            });
+        } else {
+          //!리프레시 토큰이 유효하고
           const { email } = checkRefeshToken(refreshToken);
-          const findUserIdByContentsId = await Contents.findUserIdByContentsId(contentId);
+          const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+            contentId
+          );
           await Users.findUser(email)
             .then(async (data: any) => {
-              if(data.id !== findUserIdByContentsId) {//!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+              if (data.id !== findUserIdByContentsId) {
+                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
                 res
                   .status(400)
                   .send({ message: "refresh token has been tampered" });
-              } else {//!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
-                const {email, nickname} = checkRefeshToken(refreshToken);
-                const findUser: any = await Users.findUser(email)
+              } else {
+                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
+                const { email, nickname } = checkRefeshToken(refreshToken);
+                const findUser: any = await Users.findUser(email);
                 const contentId: number = Number(req.body.contentId);
                 console.log(contentId);
                 console.log("----00000------------------------");
-                const getComment: any = await Comments.findCommentByContentId(contentId);
-                const getContent: any = await Contents.findByContentsId(contentId);
+                const getComment: any = await Comments.findCommentByContentId(
+                  contentId
+                );
+                const getContent: any = await Contents.findByContentsId(
+                  contentId
+                );
                 const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
                   getContent.id
                 );
                 const getContentUser: any = await Users.findById(
                   getUserIdByContentsId.userId
                 );
-                const comment: any = await Comments.findById(req.body.commentId);
-                
+
                 getContent.userId = findUser.id;
                 getContent.title = req.body.title;
                 getContent.content = req.body.content;
@@ -305,7 +326,9 @@ const controllers = {
                 getContent.imgMain = req.body.imgMain;
                 getContent.isPublic = req.body.isPublic;
                 getContent.updatedAt = new Date();
-                await getContent.save();
+                await getContent
+                  .save()
+                  .catch((err: string) => console.log(err));
 
                 const verifyRefreshToken: {
                   name: string;
@@ -315,7 +338,7 @@ const controllers = {
                   iat?: number;
                   exp?: number;
                 } = checkRefeshToken(refreshToken);
-                
+
                 const userInfo = {
                   name: verifyRefreshToken.name,
                   nickname: verifyRefreshToken.nickname,
@@ -346,14 +369,14 @@ const controllers = {
                     ...getContent,
                     comments: [...getComment],
                   },
-                  message: "New AccessToken, please restore and request again"
+                  message: "New AccessToken, please restore and request again",
                 });
               }
             })
             .catch((err: string) => console.log(err));
         }
       }
-    } catch(e) {
+    } catch (e) {
       throw new Error(e);
     }
   },
@@ -372,7 +395,9 @@ const controllers = {
           message: "New AccessToken, please restore and request again",
         });
       } else {
-        await Contents.deleteByContentsId(req.body.contentId);
+        await Contents.deleteByContentsId(
+          req.body.contentId
+        ).catch((err: string) => console.log(err));
         res.status(200).send({ message: "content successfully deleted" });
       }
     } catch (e) {
@@ -450,7 +475,7 @@ const controllers = {
         comment.user = findUserId.id;
         comment.stamp = req.body.stampId;
         comment.content = req.body.contentId;
-        await comment.save();
+        await comment.save().catch((err: string) => console.log(err));
         console.log("------------------------");
         console.log(comment);
         res.send({
@@ -498,7 +523,7 @@ const controllers = {
           comment.user = findUserIdByrefreshToken.id;
           comment.stamp = req.body.stampId;
           comment.content = req.body.contentId;
-          await comment.save();
+          await comment.save().catch((err: string) => console.log(err));
           res.status(200).send({
             message: "New AccessToken, please restore and request again",
             data: {
@@ -540,7 +565,7 @@ const controllers = {
         comment.stamp = req.body.stampId ? req.body.stampId : comment.stampId;
         comment.content = req.body.contentId;
         comment.updatedAt = new Date();
-        await comment.save();
+        await comment.save().catch((err: string) => console.log(err));
         res.status(200).send({
           message: "comment updated",
           data: {
@@ -585,7 +610,7 @@ const controllers = {
             : comment.stampId;
           comment.content = req.body.contentId;
           comment.updatedAt = new Date();
-          await comment.save();
+          await comment.save().catch((err: string) => console.log(err));
           res.status(200).send({
             message: "New AccessToken, please restore and request again",
             data: {
@@ -624,7 +649,9 @@ const controllers = {
           message: "New AccessToken, please restore and request again",
         });
       } else if (refreshToken) {
-        await Comments.deleteByCommentId(req.body.commentId);
+        await Comments.deleteByCommentId(
+          req.body.commentId
+        ).catch((err: string) => console.log(err));
         res.status(200).send({ message: "comment successfully deleted" });
       } else {
         res.status(500).send({ message: "error" });
@@ -633,6 +660,5 @@ const controllers = {
       throw new Error(e);
     }
   },
-  postCalendar: async (req: Request, res: Response) => {},
 };
 export default controllers;
