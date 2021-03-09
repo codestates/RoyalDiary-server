@@ -101,8 +101,6 @@ export class Contents extends BaseEntity {
       .where("id = :id", { id })
       .execute();
   }
-
-
   static insertNewContent(
     title: string,
     content: string,
@@ -172,6 +170,7 @@ export class Contents extends BaseEntity {
       .addSelect("emotion")
       .addSelect("views")
       .addSelect("imgUrl")
+      .addSelect("imgMain")
       .addSelect("createdAt")
       .addSelect("updatedAt")
       .where("contents.id = :id", { id })
