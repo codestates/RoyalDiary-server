@@ -41,7 +41,7 @@ const controllers = {
           content.isPublic = req.body.isPublic;
           await content.save()
             .catch((err: string) => console.log(err));
-          res.status(200).send("message : ok");
+          res.status(200).send({message : "ok"});
         }
       } 
       else if (!accessTokenData) {
@@ -83,7 +83,7 @@ const controllers = {
                 content.isPublic = req.body.isPublic;
                 await content.save()
                   .catch((err: string) => console.log(err));
-                res.status(200).send("message : ok");
+                res.status(200).send({message : "ok"});
               }
           }
       }
