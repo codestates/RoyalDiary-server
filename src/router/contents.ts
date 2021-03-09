@@ -16,7 +16,7 @@ router.delete("/dcontent", controller.delDcontent);
 
 router.post("/comment", controller.postComment);
 
-router.get("/publiccontents",controller.getPubliccontents); //postman test : GET, http://localhost:4000/contents/publiccontents?page=1
+router.get("/publiccontents",controller.getPublicContents); //postman test : GET, http://localhost:4000/contents/publiccontents?page=1
 
 router.patch("/ucomment", controller.patchUcomment);
 
