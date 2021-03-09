@@ -409,29 +409,35 @@ const controllers = {
               message: "refresh token is outdated, pleaes log in again",
             });
         } else {
-          const { email } = checkRefeshToken(refreshToken);
-          const findUserIdByContentsId = await Contents.findUserIdByContentsId(
-            contentId
-          );
-          await Users.findUser(email)
-            .then(async (data: any) => {
-              if (data.id !== findUserIdByContentsId) {
-                res
-                  .status(400)
-                  .send({ message: "refresh token has been tampered" });
-              } else {
-                const checkRefreshToken = checkRefeshToken(refreshToken);
-                res.status(201).send({
-                  data: {
-                    accessToken: generateAccessToken(checkRefreshToken),
-                  },
-                  message: "New AccessToken, please restore and request again"
-                });
-              }
-            })
-            .catch((err: string) => console.log(err));
+          if(checkRefeshToken(refreshToken)) {
+            const { email } = checkRefeshToken(refreshToken);
+            const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+              contentId
+            );
+            await Users.findUser(email)
+              .then(async (data: any) => {
+                if (data.id !== findUserIdByContentsId) {
+                  res
+                    .status(400)
+                    .send({ message: "refresh token has been tampered" });
+                } else {
+                  const checkRefreshToken = checkRefeshToken(refreshToken);
+                  res.status(201).send({
+                    data: {
+                      accessToken: generateAccessToken(checkRefreshToken),
+                    },
+                    message: "New AccessToken, please restore and request again"
+                  });
+                }
+              })
+              .catch((err: string) => console.log(err));
+          } else {
+            res
+            .status(400)
+            .send({ message: "refresh token has been tampered" });
           }
         }
+      }
     // try {
     //   const accessToken = req.headers.authorization;
     //   const refreshToken = req.cookies.refreshToken;
