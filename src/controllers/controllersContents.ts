@@ -358,9 +358,7 @@ const controllers = {
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
       if (accessToken) {
-        //!액세스 토큰이 있고
         const { email } = isAuthorized(req);
-        const findUser: any = await Users.findUser(email);
         const findUserIdByContentsId = await Contents.findUserIdByContentsId(
           contentId
         );
@@ -369,12 +367,10 @@ const controllers = {
           .then(async (data: any) => {
             console.log(data.id)
             if (data.id !== findUserIdByContentsId.userId) {
-              //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
               res
                 .status(400)
                 .send({ message: "access token has been tampered" });
             } else {
-              //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
               await Contents.deleteByContentsId(
                 req.body.contentId
               ).catch((err: string) => console.log(err));
@@ -383,19 +379,15 @@ const controllers = {
           })
           .catch((err: string) => console.log(err));
       } else {
-        //!액세스 토큰이 없고
         if (!refreshToken) {
-          //!리프레시 토큰이 없는 경우 401
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
-          //!리프레시 토큰이 유효하지 않은 경우 202
           res
             .status(202)
             .send({
               message: "refresh token is outdated, pleaes log in again",
             });
         } else {
-          //!리프레시 토큰이 유효하고
           const { email } = checkRefeshToken(refreshToken);
           const findUserIdByContentsId = await Contents.findUserIdByContentsId(
             contentId
@@ -414,7 +406,7 @@ const controllers = {
                   data: {
                     accessToken: generateAccessToken(checkRefreshToken),
                   },
-                  message: "New AccessToken, please restore and request again",
+                  message: "New AccessToken, please restore and request again"
                 });
               }
             })
