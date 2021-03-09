@@ -5,7 +5,7 @@ import { Users } from "../entity/Users";
 import { Stamps } from "../entity/Stamps";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
-import { AnyARecord } from "node:dns";
+//import { AnyARecord } from "node:dns";
 const {
   isAuthorized,
   generateAccessToken,
@@ -373,26 +373,32 @@ const controllers = {
       if(!req.body.contentId) res.status(404);
       const contentId: number = Number(req.body.contentId);
       if (accessToken) {
-        const { email } = isAuthorized(req);
-        const findUserIdByContentsId = await Contents.findUserIdByContentsId(
-          contentId
-        );
-        console.log(findUserIdByContentsId)
-        await Users.findUser(email)
-          .then(async (data: any) => {
-            console.log(data.id)
-            if (data.id !== findUserIdByContentsId.userId) {
-              res
-                .status(400)
-                .send({ message: "access token has been tampered" });
-            } else {
-              await Contents.deleteByContentsId(
-                req.body.contentId
-              ).catch((err: string) => console.log(err));
-              res.status(200).send({ message: "content successfully deleted" });
-            }
-          })
-          .catch((err: string) => console.log(err));
+        if(isAuthorized(req)) {
+          //해석이 될 때    
+          const { email } = isAuthorized(req);
+          const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+            contentId
+          );
+          console.log(findUserIdByContentsId)
+          await Users.findUser(email)
+            .then(async (data: any) => {
+              console.log(data.id)
+              if (data.id !== findUserIdByContentsId.userId) {
+                res
+                  .status(400)
+                  .send({ message: "access token has been tampered" });
+              } else {
+                await Contents.deleteByContentsId(
+                  req.body.contentId
+                ).catch((err: string) => console.log("delDcontent error: " + err));
+                res.status(200).send({ message: "content successfully deleted" });
+              }
+            })
+            .catch((err: string) => console.log(err));
+        } else {
+          res.status(400)
+          .send({message: "access token has been tampered"})
+        }
       } else {
         if (!refreshToken) {
           res.status(401).send({ message: "refresh token not provided" });
