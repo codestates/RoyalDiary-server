@@ -17,7 +17,8 @@ const controllers = {
     try {
       const accessTokenData = isAuthorized(req);
       const refreshToken = req.cookies.refreshToken;
-      const findUser: any = await Users.findUser(isAuthorized(req).email);
+      const findUser: any = await Users.findOne({email: isAuthorized(req).email})
+      // const findUser: any = await Users.findUser(isAuthorized(req).email);
       console.log(findUser);
 
       //has accessToken
@@ -38,29 +39,33 @@ const controllers = {
         //   req.body.imgMain,
         //   req.body.isPublic
         // );
+
+        // await comment.save().catch((err: string) => console.log(err));
+
         console.log("------")
-        const newContent: any = new Contents();
-        newContent.userId = findUser.id;
-        newContent.title = req.body.title;
-        newContent.content = req.body.content;
-        newContent.weather = req.body.weather;
-        newContent.emotion = req.body.emotion;
-        newContent.imgUrl = req.body.imgUrl;
-        newContent.imgMain = req.body.imgMain;
-        newContent.isPublic = req.body.isPublic;
-        await newContent.save().catch((err: string) => console.log(err));
+        const content = new Contents();
+        content.user = findUser.id;
+        content.imgMain = req.body.imgMain;
+        content.title = req.body.title;
+        content.content = req.body.content;
+        content.weather = req.body.weather;
+        content.emotion = req.body.emotion;
+        content.imgUrl = req.body.imgUrl;
+        content.isPublic = req.body.isPublic;
+        await content.save()
+          .catch((err: string) => console.log(err));
         console.log(findUser.id);
-        console.log(newContent);
+        console.log(content);
 
         //newContent.userId = findUser.id
 
         //console.log(newContent)
         res.send({ message: "ok" });
 
-        if (!newContent) {
-          res.status(401).send("access token has been tampered");
-        }
+        
         res.status(200).send("message : ok");
+      } else if (!accessTokenData) {
+        res.status(401).send("access token has been tampered");
       }
     } catch (e) {
       throw new Error(e);
@@ -69,8 +74,7 @@ const controllers = {
   getContent: async (req: Request, res: Response) => {
     try {
       const contentId: number = Number(req.query.contentId);
-      console.log(contentId);
-      console.log("----00000------------------------");
+      console.log("this is getContent");
       const findId: any = await Contents.findSelectByContentsId(contentId);
       const getComment: any = await Comments.findCommentByContentId(contentId);
       const getContent: any = await Contents.findByContentsId(contentId);
@@ -111,6 +115,7 @@ const controllers = {
   },
   getContents: async (req: Request, res: Response) => {
     try {
+      console.log("this is getContents")
       if (isAuthorized(req)) {
         const findUser: any = await Users.findUser(isAuthorized(req).email);
         const pageNum: any = req.query.page;
@@ -144,7 +149,8 @@ const controllers = {
 
           const orderByRecent = [...allContentOrderByRecent];
           const orderByLikes = [...allContentOrderByLikes];
-          const count = await Contents.count();
+          const findUsers: any[] = await Contents.find({user: findUser.id});
+          const count = findUsers.length;
           res.status(200).send({
             data: {
               orderByRecent,
@@ -164,12 +170,13 @@ const controllers = {
   },
   patchUcontent: async (req: Request, res: Response) => {
     try {
+      console.log("this is patchUcontent")
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
       if (accessToken) {
         //!액세스 토큰이 있고
-        const { email, nickname } = isAuthorized(req);
+        const { email } = isAuthorized(req);
         const findUser: any = await Users.findUser(email);
         const findUserIdByContentsId = await Contents.findUserIdByContentsId(
           contentId
@@ -184,8 +191,6 @@ const controllers = {
             } else {
               //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
 
-              console.log(contentId);
-              console.log("----00000------------------------");
               const getComment: any = await Comments.findCommentByContentId(
                 contentId
               );
@@ -238,35 +243,6 @@ const controllers = {
                 },
                 message: "successfully revised",
               });
-
-              // res
-              //   .status(200)
-              //   .send({
-              //     data: {
-              // id: content.id,
-              // nickname: nickname,
-              // title: content.title,
-              // content: content.content,
-              // weather: content.weather,
-              // emotion: content.emotion,
-              // views: content.views,
-              // imgUrl: content.imgUrl,
-              // imgMain: content.imgMain,
-              // createdAt: content.createdAt,
-              // updatedAt: content.updatedAt,
-              //       comments: [
-              //                   {
-              //                     nickname: "nickname",
-              //                     commentId: "commentId",
-              //                     createdAt: "createdAt",
-              //                     updatedAt: "updatedAt",
-              //                     stampId: "stampId",
-              //                     stampUrl: "stampUrl"
-              //                   }
-              //         ]
-              //     },
-              //     message: "successfully revised"
-              //   })
             }
           })
           .catch((err: string) => console.log(err));
@@ -274,7 +250,6 @@ const controllers = {
         //!액세스 토큰이 없고
         if (!refreshToken) {
           //!리프레시 토큰이 없는 경우 401
-          console.log(accessToken);
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
           //!리프레시 토큰이 유효하지 않은 경우 202
@@ -298,11 +273,9 @@ const controllers = {
                   .send({ message: "refresh token has been tampered" });
               } else {
                 //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
-                const { email, nickname } = checkRefeshToken(refreshToken);
+                const { email } = checkRefeshToken(refreshToken);
                 const findUser: any = await Users.findUser(email);
                 const contentId: number = Number(req.body.contentId);
-                console.log(contentId);
-                console.log("----00000------------------------");
                 const getComment: any = await Comments.findCommentByContentId(
                   contentId
                 );
@@ -381,6 +354,7 @@ const controllers = {
   },
   delDcontent: async (req: Request, res: Response) => {
     try {
+      console.log("this is delDcontent")
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
@@ -403,8 +377,9 @@ const controllers = {
       throw new Error(e);
     }
   },
-  getPubliccontents: async (req: Request, res: Response) => {
+  getPublicContents: async (req: Request, res: Response) => {
     try {
+      console.log("this is getPublicContents")
       const pageNum: any = req.query.page;
       let skip: number = 0;
       if (pageNum > 1) {
@@ -427,37 +402,53 @@ const controllers = {
         skip,
         take: 9,
       });
-      //getConent`s Nickname By User`s Nickname
+
       if(allContentOrderByRecent && allContentOrderByLikes) {
         for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
           const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
             allContentOrderByRecent[i].id
             );
-            const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
-              allContentOrderByLikes[i].id
-              );
+          const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
+            allContentOrderByLikes[i].id
+            );
               
-        const getContentUserOrderByCreatedAt: any = await Users.findById(
-          getUserIdByContentsIdOrderByCreateAt.userId
-          );
-          const getContentUserOrderByViews: any = await Users.findById(
-          getUserIdByContentsIdOrderByViews.userId
-          );
-          
-        allContentOrderByRecent[i].nickname =
-        getContentUserOrderByCreatedAt.nickname;
-        allContentOrderByLikes[i].nickname =
-        getContentUserOrderByViews.nickname;
+
+          await Users.findById(
+            getUserIdByContentsIdOrderByCreateAt.userId
+          )
+          .then((data: any) => {
+            allContentOrderByRecent[i].nickname =
+            data.nickname;
+          })
+          .catch((err: string) => console.log(err));
+
+          await Users.findById(
+            getUserIdByContentsIdOrderByViews.userId
+          )
+          .then((data: any) => {
+            allContentOrderByLikes[i].nickname =
+            data.nickname;
+          })
+          .catch((err: string) => console.log(err));
         }
         
         const orderByRecent = [...allContentOrderByRecent];
         const orderByLikes = [...allContentOrderByLikes];
+        const count = await Contents.count();
         res.status(200).send({
           data: {
             orderByRecent,
             orderByLikes,
-          },
+            count
+          }
         });
+      } else {
+        res.status(204).send({
+          data: {
+            orderByRecent: {},
+            orderByLikes: {}
+          }
+        })
       }
     } catch (e) {
       throw new Error(e);
@@ -550,6 +541,7 @@ const controllers = {
   },
   patchUcomment: async (req: Request, res: Response) => {
     try {
+      console.log("this is patchUcomment")
       const refreshToken = req.headers.refreshToken;
       const findCommentByCommentId: any = await Comments.findOne({
         id: req.body.commentId,
@@ -637,6 +629,7 @@ const controllers = {
   },
   delDcomment: async (req: Request, res: Response) => {
     try {
+      console.log("this is delDcomment")
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
