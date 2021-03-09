@@ -211,7 +211,6 @@ const users = {
   delDuser: async (req: Request, res: Response) => {
     try {
       const refreshToken = req.cookies.refreshToken;
-      console.log(users);
       if(isAuthorized(req)) {
         const {email} = isAuthorized(req);
         await Users.findUser(email)

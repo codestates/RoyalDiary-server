@@ -346,33 +346,137 @@ const controllers = {
               }
             })
             .catch((err: string) => console.log(err));
+          }
         }
-      }
     } catch (e) {
       throw new Error(e);
     }
   },
   delDcontent: async (req: Request, res: Response) => {
     try {
-      console.log("this is delDcontent")
+      const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-
-      if (!refreshToken) {
-        res.status(401).send({ message: "refresh token has been tempered" });
-      } else if (!checkRefeshToken(refreshToken)) {
-        const checkRefreshToken = checkRefeshToken(refreshToken);
-        res.status(201).send({
-          data: {
-            accessToken: generateAccessToken(checkRefreshToken),
-          },
-          message: "New AccessToken, please restore and request again",
-        });
+      const contentId: number = Number(req.body.contentId);
+      if (accessToken) {
+        //!액세스 토큰이 있고
+        const { email } = isAuthorized(req);
+        const findUser: any = await Users.findUser(email);
+        const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+          contentId
+        );
+        console.log(findUserIdByContentsId)
+        await Users.findUser(email)
+          .then(async (data: any) => {
+            console.log(data.id)
+            if (data.id !== findUserIdByContentsId.userId) {
+              //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+              res
+                .status(400)
+                .send({ message: "access token has been tampered" });
+            } else {
+              //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
+              await Contents.deleteByContentsId(
+                req.body.contentId
+              ).catch((err: string) => console.log(err));
+              res.status(200).send({ message: "content successfully deleted" });
+            }
+          })
+          .catch((err: string) => console.log(err));
       } else {
-        await Contents.deleteByContentsId(
-          req.body.contentId
-        ).catch((err: string) => console.log(err));
-        res.status(200).send({ message: "content successfully deleted" });
-      }
+        //!액세스 토큰이 없고
+        if (!refreshToken) {
+          //!리프레시 토큰이 없는 경우 401
+          res.status(401).send({ message: "refresh token not provided" });
+        } else if (!checkRefeshToken(refreshToken)) {
+          //!리프레시 토큰이 유효하지 않은 경우 202
+          res
+            .status(202)
+            .send({
+              message: "refresh token is outdated, pleaes log in again",
+            });
+        } else {
+          //!리프레시 토큰이 유효하고
+          const { email } = checkRefeshToken(refreshToken);
+          const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+            contentId
+          );
+          await Users.findUser(email)
+            .then(async (data: any) => {
+              if (data.id !== findUserIdByContentsId) {
+                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+                res
+                  .status(400)
+                  .send({ message: "refresh token has been tampered" });
+              } else {
+                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
+                const checkRefreshToken = checkRefeshToken(refreshToken);
+                res.status(201).send({
+                  data: {
+                    accessToken: generateAccessToken(checkRefreshToken),
+                  },
+                  message: "New AccessToken, please restore and request again",
+                });
+              }
+            })
+            .catch((err: string) => console.log(err));
+          }
+        }
+    // try {
+    //   const accessToken = req.headers.authorization;
+    //   const refreshToken = req.cookies.refreshToken;
+    //   const contentId: number = Number(req.body.contentId);
+    //   if (accessToken) {
+    //     //!액세스 토큰이 있고
+    //     const { email } = isAuthorized(req);
+    //     const findUser: any = await Users.findUser(email);
+    //     const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+    //       contentId
+    //     );
+    //     await Users.findUser(email)
+    //       .then(async (data: any) => {
+    //         if (data.id !== findUserIdByContentsId) {
+    //           //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+    //           res
+    //             .status(400)
+    //             .send({ message: "access token has been tampered" });
+    //         } else {
+    //           //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
+
+    //         }
+    //       })
+    //       .catch((err: string) => console.log(err));
+    //   } else {
+    //     //!액세스 토큰이 없고
+    //     if (!refreshToken) {
+    //       //!리프레시 토큰이 없는 경우 401
+    //       res.status(401).send({ message: "refresh token not provided" });
+    //     } else if (!checkRefeshToken(refreshToken)) {
+    //       //!리프레시 토큰이 유효하지 않은 경우 202
+    //       res
+    //         .status(202)
+    //         .send({
+    //           message: "refresh token is outdated, pleaes log in again",
+    //         });
+    //     } else {
+    //       //!리프레시 토큰이 유효하고
+    //       const { email } = checkRefeshToken(refreshToken);
+    //       const findUserIdByContentsId = await Contents.findUserIdByContentsId(
+    //         contentId
+    //       );
+    //       await Users.findUser(email)
+    //         .then(async (data: any) => {
+    //           if (data.id !== findUserIdByContentsId) {
+    //             //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+    //             res
+    //               .status(400)
+    //               .send({ message: "refresh token has been tampered" });
+    //           } else {
+    //             //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
+    //           }
+    //         })
+    //         .catch((err: string) => console.log(err));
+    //       }
+    //     }
     } catch (e) {
       throw new Error(e);
     }
