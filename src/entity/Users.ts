@@ -7,6 +7,7 @@ import {
   OneToMany,
   BaseEntity,
   InsertResult,
+  JoinColumn,
 } from "typeorm";
 import { Comments } from "./Comments";
 import { Contents } from "./Contents";
@@ -32,17 +33,20 @@ export class Users extends BaseEntity {
   @Column()
   mobile: string;
 
+  
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
 
-  @OneToMany((type) => Comments, (comments) => comments.user)
+  @OneToMany((type) => Comments, (comments) => comments.user )
   comments: Comments[];
 
   @OneToMany((type) => Contents, (contents) => contents.user, { cascade: true })
+  @JoinColumn()
   contents: Contents[];
+
 
   static findUser(email: string): Promise<Users | undefined> {
     return this.createQueryBuilder("users")

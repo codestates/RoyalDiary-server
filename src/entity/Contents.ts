@@ -7,6 +7,7 @@ import {
   BaseEntity,
   Between,
   OneToOne,
+  JoinColumn
 } from "typeorm";
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { Comments } from "./Comments";
@@ -56,8 +57,14 @@ export class Contents extends BaseEntity {
   comments: Comments[];
 
   /* contents(one) & comment(many) */
-  @ManyToOne((type) => Users, (users) => users.id, { onDelete: "CASCADE" })
-  user: Contents;
+  @ManyToOne((type) => Users, (users) => users.id, { 
+    onUpdate:"CASCADE",
+    onDelete: "CASCADE" 
+  })
+  @JoinColumn({name: 'userId'})
+  user: Users;
+
+
 /*
           'id',
           'title',
@@ -102,7 +109,6 @@ export class Contents extends BaseEntity {
       .execute();
   }
 
-
   static insertNewContent(
     title: string,
     content: string,
@@ -115,7 +121,7 @@ export class Contents extends BaseEntity {
     return this.createQueryBuilder()
       .insert()
       .into(Contents)
-      .values([{ title, content, weather, emotion, imgUrl, imgMain, isPublic }])
+      .values([{title, content, weather, emotion, imgUrl, imgMain, isPublic }])
       .execute();
   }
   static findDiaryListById(userId: number): Promise<Contents[]> {

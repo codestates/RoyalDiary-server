@@ -16,14 +16,9 @@ const controllers = {
   postCcontet: async (req: Request, res: Response) => {
 
     try {
-<<<<<<< HEAD
-=======
-
->>>>>>> ac7fbaece677696067cf088a29b2aabc0c1788f9
       const accessTokenData = isAuthorized(req);
-      const refreshToken = req.cookies.refreshToken
-      const findUser: any = await Users.findUser(isAuthorized(req).email);
-      console.log(findUser)
+
+      //console.log(findUser)
 
       //has accessToken
       //200
@@ -34,17 +29,22 @@ const controllers = {
       //!refreshToken => (404)
 
       if (accessTokenData) {
-        // const newContent : any = await Contents.insertNewContent(
-        //   req.body.title,
-        //   req.body.content,
-        //   req.body.weather,
-        //   req.body.emotion,
-        //   req.body.imgUrl,
-        //   req.body.imgMain,
-        //   req.body.isPublic
-        // );
-        const newContent :any = new Contents();
-        newContent.userId = findUser.id;
+        const findUser: any = await Users.findOne(accessTokenData.email);
+        //console.log(findUser)
+
+        const newContent = await Contents.insertNewContent(
+          req.body.title,
+          req.body.content,
+          req.body.weather,
+          req.body.emotion,
+          req.body.imgUrl,
+          req.body.imgMain,
+          req.body.isPublic
+        );
+
+/*
+        const newContent = new Contents();
+        newContent.user = findUser.id;
         newContent.title = req.body.title;
         newContent.content = req.body.content;
         newContent.weather = req.body.weather;
@@ -53,26 +53,19 @@ const controllers = {
         newContent.imgMain = req.body.imgMain;
         newContent.isPublic = req.body.isPublic
         await newContent.save();
-        console.log(findUser.id)
+*/
+        //console.log(findUser.id)
         console.log(newContent)
-  
-        //newContent.userId = findUser.id
-  
+
         //console.log(newContent)
-        res.send({message : "ok"})
-             
-        if (!newContent) {
-          res.status(401).send('access token has been tampered');
-        }
+
         res.status(200).send("message : ok");
-      } 
+      } else {
+          res.status(401).send('access token has been tampered');
+      }
     }
      catch(e) {
       throw new Error(e)
-<<<<<<< HEAD
-=======
-
->>>>>>> ac7fbaece677696067cf088a29b2aabc0c1788f9
     }
 
   },
@@ -270,84 +263,84 @@ const controllers = {
 
   postComment: async (req: Request, res: Response) => {
     try {
-      // const refreshToken = req.cookies.refreshToken;
-      // if (isAuthorized(req)) {
-      //   const findUserId: any = await Users.findOne({
-      //     email: isAuthorized(req).email,
-      //   });
-      //   const comment = new Comments();
-      //   comment.text = req.body.text;
-      //   comment.user = findUserId.id;
-      //   comment.stamp = req.body.stampId;
-      //   comment.content = req.body.contentId;
-      //   await comment.save();
-      //   console.log("------------------------");
-      //   console.log(comment);
-      //   res.send({
-      //     message: "ok",
-      //     data: {
-      //       commentInfo: {
-      //         id: comment.content,
-      //         userId: comment.user,
-      //         nickname: isAuthorized(req).nickname,
-      //         createdAt: comment.createdAt,
-      //         updatedAt: comment.updatedAt,
-      //         text: comment.text,
-      //         stampId: comment.stamp,
-      //       },
-      //     },
-      //   });
-      // } else if (refreshToken) {
-      //   const verifyRefreshToken: {
-      //     name: string;
-      //     nickname: string;
-      //     email: string;
-      //     mobile: string;
-      //     iat?: number;
-      //     exp?: number;
-      //   } = checkRefeshToken(refreshToken);
-      //   const userEmail: string = verifyRefreshToken.email;
-      //   const isTampered: any = await Users.findUser(userEmail); //true: 조작안됨, false: 조작됨
-      //   const findUserIdByrefreshToken: any = await Users.findOne({
-      //     email: verifyRefreshToken.email,
-      //   });
-      //   console.log(typeof verifyRefreshToken.email);
-      //   if (!isTampered) {
-      //     res.status(401).send({ message: "refresh token has been tampered" });
-      //   } else {
-      //     const userInfo = {
-      //       name: verifyRefreshToken.name,
-      //       nickname: verifyRefreshToken.nickname,
-      //       email: verifyRefreshToken.email,
-      //       mobile: verifyRefreshToken.mobile,
-      //     };
-      //     const accessToken: string = generateAccessToken(userInfo);
-      //     console.log("hello");
-      //     const comment = new Comments();
-      //     comment.text = req.body.text;
-      //     comment.user = findUserIdByrefreshToken.id;
-      //     comment.stamp = req.body.stampId;
-      //     comment.content = req.body.contentId;
-      //     await comment.save();
-      //     res.status(200).send({
-      //       message: "New AccessToken, please restore and request again",
-      //       data: {
-      //         accessToken: accessToken,
-      //         commentInfo: {
-      //           id: comment.content,
-      //           userId: comment.user,
-      //           nickname: findUserIdByrefreshToken.nickname,
-      //           createdAt: comment.createdAt,
-      //           updatedAt: comment.updatedAt,
-      //           text: comment.text,
-      //           stampId: comment.stamp,
-      //         },
-      //       },
-      //     });
-      //   }
-      // } else {
-      //   res.send({ message: "not authorized" });
-      // }
+      const refreshToken = req.cookies.refreshToken;
+      if (isAuthorized(req)) {
+        const findUserId: any = await Users.findOne({
+          email: isAuthorized(req).email,
+        });
+        const comment = new Comments();
+        comment.text = req.body.text;
+        comment.user = findUserId.id;
+        comment.stamp = req.body.stampId;
+        comment.content = req.body.contentId;
+        await comment.save();
+        console.log("------------------------");
+        console.log(comment);
+        res.send({
+          message: "ok",
+          data: {
+            commentInfo: {
+              id: comment.content,
+              userId: comment.user,
+              nickname: isAuthorized(req).nickname,
+              createdAt: comment.createdAt,
+              updatedAt: comment.updatedAt,
+              text: comment.text,
+              stampId: comment.stamp,
+            },
+          },
+        });
+      } else if (refreshToken) {
+        const verifyRefreshToken: {
+          name: string;
+          nickname: string;
+          email: string;
+          mobile: string;
+          iat?: number;
+          exp?: number;
+        } = checkRefeshToken(refreshToken);
+        const userEmail: string = verifyRefreshToken.email;
+        const isTampered: any = await Users.findUser(userEmail); //true: 조작안됨, false: 조작됨
+        const findUserIdByrefreshToken: any = await Users.findOne({
+          email: verifyRefreshToken.email,
+        });
+        console.log(typeof verifyRefreshToken.email);
+        if (!isTampered) {
+          res.status(401).send({ message: "refresh token has been tampered" });
+        } else {
+          const userInfo = {
+            name: verifyRefreshToken.name,
+            nickname: verifyRefreshToken.nickname,
+            email: verifyRefreshToken.email,
+            mobile: verifyRefreshToken.mobile,
+          };
+          const accessToken: string = generateAccessToken(userInfo);
+          console.log("hello");
+          const comment = new Comments();
+          comment.text = req.body.text;
+          comment.user = findUserIdByrefreshToken.id;
+          comment.stamp = req.body.stampId;
+          comment.content = req.body.contentId;
+          await comment.save();
+          res.status(200).send({
+            message: "New AccessToken, please restore and request again",
+            data: {
+              accessToken: accessToken,
+              commentInfo: {
+                id: comment.content,
+                userId: comment.user,
+                nickname: findUserIdByrefreshToken.nickname,
+                createdAt: comment.createdAt,
+                updatedAt: comment.updatedAt,
+                text: comment.text,
+                stampId: comment.stamp,
+              },
+            },
+          });
+        }
+      } else {
+        res.send({ message: "not authorized" });
+      }
     } catch (e) {
       res.status(500).send({ message: "err" });
     }
