@@ -77,6 +77,14 @@ app.use(
   })
 );
 
+//!process.on 은 작동이 안 될 때만 사용할 것
+process.on('uncaughtException', (err) => {
+  console.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+  console.error(err.stack)
+  process.exit(1)
+})
+
+
 app.get("/", (req: Request, res: Response, next: NextFunction) => {
   res.send("Hello world!");
 });
