@@ -15,57 +15,77 @@ const {
 const controllers = {
   postCcontet: async (req: Request, res: Response) => {
     try {
-      const accessTokenData = isAuthorized(req);
+      const accessTokenData = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-      const findUser: any = await Users.findOne({email: isAuthorized(req).email})
-      // const findUser: any = await Users.findUser(isAuthorized(req).email);
-      console.log(findUser);
-
-      //has accessToken
-      //200
-
-      //!accessToken
-      //check refreshToken
-      //has refreshToken => (201) add accessToken
-      //!refreshToken => (404)
-
+      
       if (accessTokenData) {
-        // const newContent : any = await Contents.insertNewContent(
-        //   req.body.title,
-        //   req.body.content,
-        //   req.body.weather,
-        //   req.body.emotion,
-        //   req.body.imgUrl,
-        //   req.body.imgMain,
-        //   req.body.isPublic
-        // );
+        if(!isAuthorized(req)){
+          res
+          .status(400)
+          .send({ message: "access token has been tampered" });
+        } else {
+          const {email} = isAuthorized(req);
 
-        // await comment.save().catch((err: string) => console.log(err));
+          const findUser: any = await Users.findUser(email)
+          //const findUser: any = await Users.findOne({email})
+          console.log(findUser)
 
-        console.log("------")
-        const content = new Contents();
-        content.user = findUser.id;
-        content.imgMain = req.body.imgMain;
-        content.title = req.body.title;
-        content.content = req.body.content;
-        content.weather = req.body.weather;
-        content.emotion = req.body.emotion;
-        content.imgUrl = req.body.imgUrl;
-        content.isPublic = req.body.isPublic;
-        await content.save()
-          .catch((err: string) => console.log(err));
-        console.log(findUser.id);
-        console.log(content);
+          const content = new Contents();
+          content.user = findUser.id;
+          content.imgMain = req.body.imgMain;
+          content.title = req.body.title;
+          content.content = req.body.content;
+          content.weather = req.body.weather;
+          content.emotion = req.body.emotion;
+          content.imgUrl = req.body.imgUrl;
+          content.isPublic = req.body.isPublic;
+          await content.save()
+            .catch((err: string) => console.log(err));
+          res.status(200).send("message : ok");
+        }
+      } 
+      else if (!accessTokenData) {
+      //   res.status(401).send("access token has been tampered");
+      // } else {
+        if (!refreshToken) {
+          //!리프레시 토큰이 없는 경우 401
+          res.status(401).send({ message: "refresh token not provided" });
+        } else if (!checkRefeshToken(refreshToken)) {
+          //!리프레시 토큰이 유효하지 않은 경우 202
+          res
+            .status(202)
+            .send({
+              message: "refresh token is outdated, pleaes log in again",
+            });
+        } else {
+          //!리프레시 토큰이 유효하고
 
-        //newContent.userId = findUser.id
+              if (!isAuthorized(req)) {
+                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+                res
+                  .status(400)
+                  .send({ message: "refresh token has been tampered" });
+              } else {
+                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
 
-        //console.log(newContent)
-        res.send({ message: "ok" });
-
+                const { email } = isAuthorized(req);
+      
+                const findUser: any = await Users.findOne(email)
         
-        res.status(200).send("message : ok");
-      } else if (!accessTokenData) {
-        res.status(401).send("access token has been tampered");
+                const content = new Contents();
+                content.user = findUser.id;
+                content.imgMain = req.body.imgMain;
+                content.title = req.body.title;
+                content.content = req.body.content;
+                content.weather = req.body.weather;
+                content.emotion = req.body.emotion;
+                content.imgUrl = req.body.imgUrl;
+                content.isPublic = req.body.isPublic;
+                await content.save()
+                  .catch((err: string) => console.log(err));
+                res.status(200).send("message : ok");
+              }
+          }
       }
     } catch (e) {
       throw new Error(e);
