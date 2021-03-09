@@ -395,12 +395,10 @@ const controllers = {
           await Users.findUser(email)
             .then(async (data: any) => {
               if (data.id !== findUserIdByContentsId) {
-                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
                 res
                   .status(400)
                   .send({ message: "refresh token has been tampered" });
               } else {
-                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
                 const checkRefreshToken = checkRefeshToken(refreshToken);
                 res.status(201).send({
                   data: {
