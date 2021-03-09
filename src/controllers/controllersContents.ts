@@ -117,8 +117,6 @@ const controllers = {
         if (pageNum > 1) {
           skip = 9 * (pageNum - 1);
         }
-        console.log(await Contents.findUserIdByContentsId(2));
-        console.log("--------------");
         const allContentOrderByRecent: any = await Contents.find({
           where: { user: findUser.id },
           select: ["title", "imgUrl", "createdAt", "updatedAt"],
@@ -429,35 +427,37 @@ const controllers = {
         take: 9,
       });
       //getConent`s Nickname By User`s Nickname
-      for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
-        const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
-          allContentOrderByRecent[i].id
-        );
-        const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
-          allContentOrderByLikes[i].id
-        );
-
+      if(allContentOrderByRecent && allContentOrderByLikes) {
+        for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
+          const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
+            allContentOrderByRecent[i].id
+            );
+            const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
+              allContentOrderByLikes[i].id
+              );
+              
         const getContentUserOrderByCreatedAt: any = await Users.findById(
           getUserIdByContentsIdOrderByCreateAt.userId
-        );
-        const getContentUserOrderByViews: any = await Users.findById(
+          );
+          const getContentUserOrderByViews: any = await Users.findById(
           getUserIdByContentsIdOrderByViews.userId
-        );
-
+          );
+          
         allContentOrderByRecent[i].nickname =
-          getContentUserOrderByCreatedAt.nickname;
+        getContentUserOrderByCreatedAt.nickname;
         allContentOrderByLikes[i].nickname =
-          getContentUserOrderByViews.nickname;
+        getContentUserOrderByViews.nickname;
+        }
+        
+        const orderByRecent = [...allContentOrderByRecent];
+        const orderByLikes = [...allContentOrderByLikes];
+        res.status(200).send({
+          data: {
+            orderByRecent,
+            orderByLikes,
+          },
+        });
       }
-
-      const orderByRecent = [...allContentOrderByRecent];
-      const orderByLikes = [...allContentOrderByLikes];
-      res.status(200).send({
-        data: {
-          orderByRecent,
-          orderByLikes,
-        },
-      });
     } catch (e) {
       throw new Error(e);
     }
