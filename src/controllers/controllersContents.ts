@@ -75,15 +75,15 @@ const controllers = {
     try {
       const contentId: number = Number(req.query.contentId);
       console.log("this is getContent");
-      const findId: any = await Contents.findSelectByContentsId(contentId);
-      const getComment: any = await Comments.findCommentByContentId(contentId);
-      const getContent: any = await Contents.findByContentsId(contentId);
+      const findId: any = await Contents.findSelectByContentsId(contentId).catch((err) => console.log(err));;
+      const getComment: any = await Comments.findCommentByContentId(contentId).catch((err) => console.log(err));;
+      const getContent: any = await Contents.findByContentsId(contentId).catch((err) => console.log(err));;
       const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
         getContent.id
-      );
+      ).catch((err) => console.log(err));;
       const getContentUser: any = await Users.findById(
         getUserIdByContentsId.userId
-      );
+      ).catch((err) => console.log(err));;
 
       findId.nickname = getContentUser.nickname;
       for (let i: number = 0; i < getComment.length; i++) {
@@ -175,7 +175,6 @@ const controllers = {
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
       if (accessToken) {
-        //!액세스 토큰이 있고
         const { email } = isAuthorized(req);
         const findUser: any = await Users.findUser(email);
         const findUserIdByContentsId = await Contents.findUserIdByContentsId(
@@ -184,13 +183,10 @@ const controllers = {
         await Users.findUser(email)
           .then(async (data: any) => {
             if (data.id !== findUserIdByContentsId) {
-              //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
               res
                 .status(400)
                 .send({ message: "access token has been tampered" });
             } else {
-              //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
-
               const getComment: any = await Comments.findCommentByContentId(
                 contentId
               );
@@ -214,11 +210,6 @@ const controllers = {
               getContent.isPublic = req.body.isPublic;
               getContent.updatedAt = new Date();
               await getContent.save().catch((err: string) => console.log(err));
-              console.log(req.body);
-              console.log(req.body.isPublic);
-              console.log(getContent);
-              console.log(getContent.isPublic);
-
               getContent.nickname = getContentUser.nickname;
               for (let i: number = 0; i < getComment.length; i++) {
                 await Users.findOne({ id: getComment[i].userId })
@@ -247,19 +238,15 @@ const controllers = {
           })
           .catch((err: string) => console.log(err));
       } else {
-        //!액세스 토큰이 없고
         if (!refreshToken) {
-          //!리프레시 토큰이 없는 경우 401
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
-          //!리프레시 토큰이 유효하지 않은 경우 202
           res
             .status(202)
             .send({
               message: "refresh token is outdated, pleaes log in again",
             });
         } else {
-          //!리프레시 토큰이 유효하고
           const { email } = checkRefeshToken(refreshToken);
           const findUserIdByContentsId = await Contents.findUserIdByContentsId(
             contentId
@@ -267,12 +254,10 @@ const controllers = {
           await Users.findUser(email)
             .then(async (data: any) => {
               if (data.id !== findUserIdByContentsId) {
-                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
                 res
                   .status(400)
                   .send({ message: "refresh token has been tampered" });
               } else {
-                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
                 const { email } = checkRefeshToken(refreshToken);
                 const findUser: any = await Users.findUser(email);
                 const contentId: number = Number(req.body.contentId);
@@ -356,6 +341,7 @@ const controllers = {
     try {
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
+      if(!req.body.contentId) res.status(404);
       const contentId: number = Number(req.body.contentId);
       if (accessToken) {
         const { email } = isAuthorized(req);
