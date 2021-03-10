@@ -211,7 +211,7 @@ const controllers = {
         );
         await Users.findUser(email)
           .then(async (data: any) => {
-            if (data.id !== findUserIdByContentsId) {
+            if (data.id !== findUserIdByContentsId.userId) {
               res
                 .status(400)
                 .send({ message: "access token has been tampered" });
