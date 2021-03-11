@@ -160,7 +160,12 @@ const users = {
       if(email) {
         const isMatch: any = await Users.findUser(email);
         if(isMatch) {
-          const userInfo: object = {
+          const userInfo: {
+            name : string,
+            nickname: string,
+            email: string,
+            mobile: string
+          } = {
             name: isMatch.name,
             nickname: isMatch.nickname,
             email: isMatch.email,
@@ -174,6 +179,7 @@ const users = {
           })
           .send({
             data: {
+              nickname: userInfo.nickname,
               accessToken: accessToken
             }
           })
