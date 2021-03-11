@@ -67,4 +67,10 @@ export class Comments extends BaseEntity {
       .where("comments.id = :id", { id })
       .getOne()
   }
+  static findUserIdByCommentId(id: number) {
+    return this.createQueryBuilder("comments")
+    .select("userId")
+      .where("comments.id = :id", { id })
+      .getRawOne();
+  }
 }
