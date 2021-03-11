@@ -184,7 +184,7 @@ const users = {
             }
           })
         } else {
-          res.status(204).send({message: "not exists"});
+          res.status(201).send({message: "not exists"});
         }
       }
     } catch(e) {
