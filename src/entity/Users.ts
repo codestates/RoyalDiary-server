@@ -7,6 +7,7 @@ import {
   OneToMany,
   BaseEntity,
   InsertResult,
+  JoinColumn
 } from "typeorm";
 import { Comments } from "./Comments";
 import { Contents } from "./Contents";
@@ -31,6 +32,9 @@ export class Users extends BaseEntity {
 
   @Column()
   mobile: string;
+
+  @Column()
+  auth: string;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;

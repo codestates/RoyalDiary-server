@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import "reflect-metadata";
 import { BaseEntity, FindOneOptions, getRepository } from "typeorm";
 import { Users } from "../entity/Users";
-import { Stamps } from "../entity/Stamps";
+// import { Stamps } from "../entity/Stamps";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
 //import { AnyARecord } from "node:dns";
@@ -115,14 +115,14 @@ const controllers = {
             })
             .catch((err) => console.log(err));
           }
-          for (let i: number = 0; i < getComment.length; i++) {
-            const stampId: number = getComment[i].stampId;
-            await Stamps.findOne({ id: stampId })
-            .then((data: any) => {
-              getComment[i].stampUrl = data.imgUrl;
-            })
-            .catch((err) => console.log(err));
-          }
+          // for (let i: number = 0; i < getComment.length; i++) {
+          //   const stampId: number = getComment[i].stampId;
+          //   await Stamps.findOne({ id: stampId })
+          //   .then((data: any) => {
+          //     getComment[i].stampUrl = data.imgUrl;
+          //   })
+          //   .catch((err) => console.log(err));
+          // }
           
           res.status(200).send({
             data: {
@@ -247,14 +247,14 @@ const controllers = {
                   })
                   .catch((err: string) => console.log(err));
               }
-              for (let i: number = 0; i < getComment.length; i++) {
-                const stampId: number = getComment[i].stampId;
-                await Stamps.findOne({ id: stampId })
-                  .then((data: any) => {
-                    getComment[i].stampUrl = data.imgUrl;
-                  })
-                  .catch((err) => console.log(err));
-              }
+              // for (let i: number = 0; i < getComment.length; i++) {
+              //   const stampId: number = getComment[i].stampId;
+              //   await Stamps.findOne({ id: stampId })
+              //     .then((data: any) => {
+              //       getComment[i].stampUrl = data.imgUrl;
+              //     })
+              //     .catch((err) => console.log(err));
+              // }
 
               res.status(200).send({
                 data: {
@@ -341,14 +341,14 @@ const controllers = {
                     })
                     .catch((err) => console.log(err));
                 }
-                for (let i: number = 0; i < getComment.length; i++) {
-                  const stampId: number = getComment[i].stampId;
-                  await Stamps.findOne({ id: stampId })
-                    .then((data: any) => {
-                      getComment[i].stampUrl = data.imgUrl;
-                    })
-                    .catch((err) => console.log(err));
-                }
+                // for (let i: number = 0; i < getComment.length; i++) {
+                //   const stampId: number = getComment[i].stampId;
+                //   await Stamps.findOne({ id: stampId })
+                //     .then((data: any) => {
+                //       getComment[i].stampUrl = data.imgUrl;
+                //     })
+                //     .catch((err) => console.log(err));
+                // }
 
                 res.status(201).send({
                   data: {
@@ -586,7 +586,7 @@ const controllers = {
         const comment = new Comments();
         comment.text = req.body.text;
         comment.user = findUserId.id;
-        comment.stamp = req.body.stampId;
+        comment.stampId = req.body.stampId;
         comment.content = req.body.contentId;
         await comment.save().catch((err: string) => console.log(err));
         console.log("------------------------");
@@ -601,7 +601,7 @@ const controllers = {
               createdAt: comment.createdAt,
               updatedAt: comment.updatedAt,
               text: comment.text,
-              stampId: comment.stamp,
+              stampId: comment.stampId,
             },
           },
         });
@@ -634,7 +634,7 @@ const controllers = {
           const comment = new Comments();
           comment.text = req.body.text;
           comment.user = findUserIdByrefreshToken.id;
-          comment.stamp = req.body.stampId;
+          comment.stampId = req.body.stampId;
           comment.content = req.body.contentId;
           await comment.save().catch((err: string) => console.log(err));
           res.status(200).send({
@@ -648,7 +648,7 @@ const controllers = {
                 createdAt: comment.createdAt,
                 updatedAt: comment.updatedAt,
                 text: comment.text,
-                stampId: comment.stamp,
+                stampId: comment.stampId,
               },
             },
           });
@@ -670,21 +670,24 @@ const controllers = {
       if (!findCommentByCommentId) {
         res.status(400).send({ message: "cannot find comment" });
       } else if (isAuthorized(req)) {
-        const findUserId: any = await Users.findOne({
-          email: isAuthorized(req).email,
-        });
+        // const findUserId: any = await Users.findOne({
+        //   email: isAuthorized(req).email,
+        // });
         const comment: any = await Comments.findById(req.body.commentId);
         comment.text = req.body.text ? req.body.text : comment.text;
-        comment.user = findUserId.id;
-        comment.stamp = req.body.stampId ? req.body.stampId : comment.stampId;
-        comment.content = req.body.contentId;
+        console.log("thisis comment --------------------")
+        console.log(comment);
+        comment.userId = comment.userId;
+        console.log(comment.user);
+        comment.stampId = req.body.stampId ? req.body.stampId : comment.stampId;
+        comment.content = comment.content;
         comment.updatedAt = new Date();
         await comment.save().catch((err: string) => console.log(err));
         res.status(200).send({
           message: "comment updated",
           data: {
             commentInfo: {
-              id: comment.content,
+              id: comment.id,
               userId: comment.user,
               nickname: isAuthorized(req).nickname,
               createdAt: comment.createdAt,
@@ -718,11 +721,9 @@ const controllers = {
           const accessToken: string = generateAccessToken(userInfo);
           const comment: any = await Comments.findById(req.body.commentId);
           comment.text = req.body.text ? req.body.text : comment.text;
-          comment.user = findUserIdByrefreshToken.id;
-          comment.stampId = req.body.stampId
-            ? req.body.stampId
-            : comment.stampId;
-          comment.content = req.body.contentId;
+          comment.user = comment.user; //findUserIdByrefreshToken.id;
+          comment.stampId = req.body.stampId ? req.body.stampId : comment.stampId;
+          comment.content = comment.content;//req.body.contentId;
           comment.updatedAt = new Date();
           await comment.save().catch((err: string) => console.log(err));
           res.status(201).send({
@@ -730,7 +731,7 @@ const controllers = {
             data: {
               accessToken: accessToken,
               commentInfo: {
-                id: comment.content,
+                id: comment.id,
                 userId: comment.user,
                 nickname: findUserIdByrefreshToken.nickname,
                 createdAt: comment.createdAt,
