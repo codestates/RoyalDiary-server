@@ -154,6 +154,113 @@ const users = {
   //     res.send(users);
   // },
 
+  isemail: async (req: Request, res: Response) => {
+    try {
+      let email:string = req.body.email;
+      if(email) {
+        const isMatch: any = await Users.findUser(email);
+        isMatch ? res.status(302).send({message: "email matched"}) :
+        res.status(200).send({message: "no email matched"});
+      }
+    } catch(e) {
+      res.status(500).send({message: "err"});
+    }
+  },
+
+  auth: async (req: Request, res: Response) => {
+    try {
+      //!이메일O 해당 소셜로그인O -> 이미 가입한 소셜로그인 회원 =로그인
+      //!이메일O 해당 소셜로그인X -> 이미 가입한 일반회원 = 로그인
+      //!이메일X 해당 소셜 로그인X ->회원가입(DB에 유저 레코드 추가, 서버 액세스,리프레시 토큰 제공)
+      let email:string = req.body.email;
+      if(email) {
+        const matchUser: any = await Users.findUser(email);
+        console.log(matchUser)
+        if(matchUser) {
+          if(matchUser.auth) {//!이메일 존재 소셜로그인존재 로그인 필요
+            const userInfo = {
+              name: "no name",
+              nickname: matchUser.nickname,
+              email: matchUser.email,
+              mobile: "no mobile"
+            };
+            const accessToken = generateAccessToken(userInfo);
+            const refreshToken = generateRefreshToken(userInfo);
+            res
+            .cookie("refreshToken", refreshToken, {
+              httpOnly: true,
+            })
+            .send({
+              data: {
+                nickname: matchUser.nickname,
+                accessToken: accessToken
+              },
+              message: "ok",
+            });
+          } else {//! 이메일 존재 소셜로그인 가입자 아님 로그인
+            matchUser.auth = req.body.auth;
+            await matchUser.save();
+            if(matchUser.auth) {
+              const userInfo = {
+                name: matchUser.name,
+                nickname: matchUser.nickname,
+                email: matchUser.email,
+                mobile: matchUser.mobile
+              };
+              const accessToken = generateAccessToken(userInfo);
+              const refreshToken = generateRefreshToken(userInfo);
+              res
+              .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+              })
+              .send({
+                data: {
+                  nickname: matchUser.nickname,
+                  accessToken: accessToken
+                },
+                message: "ok",
+              });
+            }
+          } 
+        }else { //! 이메일 존재X 회원가입 필요
+          const user = new Users();
+          user.name = "no name"
+          console.log(user.nickname)
+          console.log("------------------------")
+          user.nickname = req.body.nickname;
+          user.password = "no password";
+          user.email = req.body.email;
+          user.mobile = "no mobile";
+          user.auth = req.body.auth;
+          await user.save();
+
+          const userInfo = {
+            name: "no name",
+            nickname: user.nickname,
+            email: user.email,
+            mobile: "no mobile"
+          };
+          const accessToken: string | undefined = generateAccessToken(userInfo);
+          const refreshToken: string | undefined  = generateRefreshToken(userInfo);
+
+          res
+          .cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+          })
+          .send({
+            data: {
+              accessToken: accessToken,
+            },
+            message: "ok",
+          });
+        }
+      } 
+    } catch(e) {
+      res.status(500).send({message: "err"});
+      throw new Error(e);
+    }
+  },
+
   getCalendar: async (req: Request, res: Response) => {
     try {
       const findByCreatedAt = await Contents.findByCreatedAt(req.query.date as string);

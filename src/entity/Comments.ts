@@ -7,7 +7,6 @@ import {
   JoinColumn
 } from "typeorm";
 import { Users } from "./Users";
-import { Stamps } from "./Stamps";
 import { Contents } from "./Contents";
 
 @Entity()
@@ -30,9 +29,8 @@ export class Comments extends BaseEntity {
   user: Users;
 
   /* stamps(one) & comment(many) */
-  @ManyToOne((type) => Stamps, (stamps) => stamps.id)
-  @JoinColumn({name: 'stampId'})
-  stamp: Stamps;
+  @Column()
+  stampId?: number;
 
   /* contents(one) & comment(many) */
   @ManyToOne((type) => Contents, (contents) => contents.id)

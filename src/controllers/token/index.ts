@@ -23,20 +23,35 @@ module.exports = {
   },
   sendRefreshToken: (res: Request, refreshToken: string) => {
     //리프레시 토큰 res로 보내기
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-    });
+    try {
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+      });
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
   },
   sendAccessToken: (res: Request, accessToken: string) => {
     //액세스 토큰 res로 보내기
-    res.status(200).json({ data: { accessToken: accessToken }, message: "ok" });
+    try {
+      res.status(200).json({ data: { accessToken: accessToken }, message: "ok" });
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
   },
   resendAccessToken: (res: Request, accessToken: string, data: string) => {
     //액세스토큰 res로 재전송
-    res.status(201).json({
-      data: { accessToken: accessToken, userInfo: data },
-      message: "New AccessToken, please restore and request again",
-    });
+    try {
+      res.status(201).json({
+        data: { accessToken: accessToken, userInfo: data },
+        message: "New AccessToken, please restore and request again",
+      });
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
   },
   isAuthorized: (req: Request) => {
     //액세스토큰이 헤더에 있는지 확인

@@ -15,6 +15,13 @@ router.post("/login", users.postLogin);
 router.post("/logout", users.postLogout);
 // //첫 화면 oAuth - post oAuth
 // router.post('/oauth', users.postOauth);
+
+//첫 화면 oauth email - post isemail
+router.post("/isemail", users.isemail);
+
+//첫 화면 auth - post auth
+router.post("/auth", users.auth);
+
 //나의 정보 - get callendar
 router.get("/calendar", users.getCalendar);
 //나의 정보 - get callendar month
@@ -25,5 +32,6 @@ router.get("/mypage", users.getMypage);
 
 //나의 정보 - delete user
 router.delete("/mypage", users.delDuser);
+
 
 export default router;
