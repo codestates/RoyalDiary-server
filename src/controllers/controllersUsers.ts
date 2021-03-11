@@ -160,7 +160,7 @@ const users = {
       if(email) {
         const isMatch: any = await Users.findUser(email);
         if(isMatch) {
-          const userInfo = {
+          const userInfo: object = {
             name: isMatch.name,
             nickname: isMatch.nickname,
             email: isMatch.email,
@@ -168,7 +168,7 @@ const users = {
           };
           const accessToken: string | undefined = generateAccessToken(userInfo);
           const refreshToken: string | undefined  = generateRefreshToken(userInfo);
-          res.status(302)
+          res.status(200)
           .cookie("refreshToken", refreshToken, {
             httpOnly: true,
           })
@@ -178,7 +178,7 @@ const users = {
             }
           })
         } else {
-          res.status(200).send({message: "no email matched"});
+          res.status(204).send({message: "not exists"});
         }
       }
     } catch(e) {
@@ -196,7 +196,7 @@ const users = {
         const matchUser: any = await Users.findUser(email);
         console.log(matchUser)
         if(matchUser) {
-          if(matchUser.auth) {//!이메일 존재 소셜로그인존재 로그인 필요
+          if(matchUser.auth) {//!이메일이 존재하고 소셜로그인이 존재해서 로그인이 필요한 경우
             const userInfo = {
               name: "no name",
               nickname: matchUser.nickname,
