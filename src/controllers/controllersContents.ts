@@ -385,7 +385,7 @@ const controllers = {
               console.log(data.id)
               if (data.id !== findUserIdByContentsId.userId) {
                 res
-                  .status(400)
+                  .status(401)
                   .send({ message: "access token has been tampered" });
               } else {
                 await Contents.deleteByContentsId(
@@ -396,12 +396,12 @@ const controllers = {
             })
             .catch((err: string) => console.log(err));
         } else {
-          res.status(400)
+          res.status(401)
           .send({message: "access token has been tampered"})
         }
       } else {
         if (!refreshToken) {
-          res.status(401).send({ message: "refresh token not provided" });
+          res.status(400).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
           res
             .status(202)
@@ -409,22 +409,35 @@ const controllers = {
               message: "refresh token is outdated, pleaes log in again",
             });
         } else {
-          if(checkRefeshToken(refreshToken)) {
-            const { email } = checkRefeshToken(refreshToken);
+          const verifyRefreshToken: {
+            name: string;
+            nickname: string;
+            email: string;
+            mobile: string;
+            iat?: number;
+            exp?: number;
+          } = checkRefeshToken(refreshToken);
+          if(verifyRefreshToken) {
+            const { email } = verifyRefreshToken;
             const findUserIdByContentsId = await Contents.findUserIdByContentsId(
               contentId
             );
             await Users.findUser(email)
               .then(async (data: any) => {
-                if (data.id !== findUserIdByContentsId) {
+                if (data.id !== findUserIdByContentsId.userId) {
                   res
-                    .status(400)
+                    .status(401)
                     .send({ message: "refresh token has been tampered" });
                 } else {
-                  const checkRefreshToken = checkRefeshToken(refreshToken);
+                  const userInfo = {
+                    name: verifyRefreshToken.name,
+                    nickname: verifyRefreshToken.nickname,
+                    email: verifyRefreshToken.email,
+                    mobile: verifyRefreshToken.mobile,
+                  };
                   res.status(201).send({
                     data: {
-                      accessToken: generateAccessToken(checkRefreshToken),
+                      accessToken: generateAccessToken(userInfo),
                     },
                     message: "New AccessToken, please restore and request again"
                   });
@@ -433,7 +446,7 @@ const controllers = {
               .catch((err: string) => console.log(err));
           } else {
             res
-            .status(400)
+            .status(401)
             .send({ message: "refresh token has been tampered" });
           }
         }
@@ -670,14 +683,14 @@ const controllers = {
       if (!findCommentByCommentId) {
         res.status(400).send({ message: "cannot find comment" });
       } else if (isAuthorized(req)) {
-        // const findUserId: any = await Users.findOne({
-        //   email: isAuthorized(req).email,
-        // });
+        const findUserId: any = await Users.findOne({
+          email: isAuthorized(req).email,
+        });
         const comment: any = await Comments.findById(req.body.commentId);
         comment.text = req.body.text ? req.body.text : comment.text;
         console.log("thisis comment --------------------")
-        console.log(comment);
-        comment.userId = comment.userId;
+        console.log(findUserId);
+        // comment.user = findUserId;
         console.log(comment.user);
         comment.stampId = req.body.stampId ? req.body.stampId : comment.stampId;
         comment.content = comment.content;
@@ -688,7 +701,7 @@ const controllers = {
           data: {
             commentInfo: {
               id: comment.id,
-              userId: comment.user,
+              userId: findUserId.id,
               nickname: isAuthorized(req).nickname,
               createdAt: comment.createdAt,
               updatedAt: comment.updatedAt,
@@ -750,27 +763,86 @@ const controllers = {
     }
   },
   delDcomment: async (req: Request, res: Response) => {
-    try {
-      console.log("this is delDcomment")
-      const refreshToken = req.cookies.refreshToken;
 
-      if (!refreshToken) {
-        res.status(401).send({ message: "refresh token has been tempered" });
-      } else if (!checkRefeshToken(refreshToken)) {
-        const checkRefreshToken = checkRefeshToken(refreshToken);
-        res.status(201).send({
-          data: {
-            accessToken: generateAccessToken(checkRefreshToken),
-          },
-          message: "New AccessToken, please restore and request again",
-        });
-      } else if (refreshToken) {
-        await Comments.deleteByCommentId(
-          req.body.commentId
-        ).catch((err: string) => console.log(err));
-        res.status(200).send({ message: "comment successfully deleted" });
+    try {
+      const accessToken = req.headers.authorization;
+      const refreshToken = req.cookies.refreshToken;
+      if(!req.body.commentId) res.status(404);
+      const commentId: number = Number(req.body.commentId);
+      if (accessToken) {
+        if(isAuthorized(req)) {
+          //해석이 될 때    
+          const { email } = isAuthorized(req);
+          const findUserIdBycommentId = await Comments.findUserIdByCommentId(
+            commentId
+          );
+          console.log(findUserIdBycommentId)
+          await Users.findUser(email)
+            .then(async (data: any) => {
+              console.log(data.id)
+              if (data.id !== findUserIdBycommentId.userId) {
+                res
+                  .status(401)
+                  .send({ message: "access token has been tampered" });
+              } else {
+                await Comments.deleteByCommentId(commentId)
+                res.status(200).send({ message: "comment successfully deleted" });
+              }
+            })
+            .catch((err: string) => console.log(err));
+        } else {
+          res.status(401)
+          .send({message: "access token has been tampered"})
+        }
       } else {
-        res.status(500).send({ message: "error" });
+        if (!refreshToken) {
+          res.status(400).send({ message: "refresh token not provided" });
+        } else if (!checkRefeshToken(refreshToken)) {
+          res
+            .status(202)
+            .send({message: "refresh token is outdated, pleaes log in again"});
+        } else {
+          const verifyRefreshToken: {
+            name: string;
+            nickname: string;
+            email: string;
+            mobile: string;
+            iat?: number;
+            exp?: number;
+          } = checkRefeshToken(refreshToken);
+          if(verifyRefreshToken) {
+            const { email } = verifyRefreshToken;
+          const findUserIdBycommentId = await Comments.findUserIdByCommentId(
+            commentId
+          );
+            await Users.findUser(email)
+              .then(async (data: any) => {
+                if (data.id !== findUserIdBycommentId.userId) {
+                  res
+                    .status(401)
+                    .send({ message: "refresh token has been tampered" });
+                } else {
+                  const userInfo = {
+                    name: verifyRefreshToken.name,
+                    nickname: verifyRefreshToken.nickname,
+                    email: verifyRefreshToken.email,
+                    mobile: verifyRefreshToken.mobile,
+                  };
+                  res.status(201).send({
+                    data: {
+                      accessToken: generateAccessToken(userInfo),
+                    },
+                    message: "New AccessToken, please restore and request again"
+                  });
+                }
+              })
+              .catch((err: string) => console.log(err));
+          } else {
+            res
+            .status(401)
+            .send({ message: "refresh token has been tampered" });
+          }
+        }
       }
     } catch (e) {
       throw new Error(e);
