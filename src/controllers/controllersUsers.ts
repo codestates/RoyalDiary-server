@@ -159,8 +159,27 @@ const users = {
       let email:string = req.body.email;
       if(email) {
         const isMatch: any = await Users.findUser(email);
-        isMatch ? res.status(302).send({message: "email matched"}) :
-        res.status(200).send({message: "no email matched"});
+        if(isMatch) {
+          const userInfo = {
+            name: isMatch.name,
+            nickname: isMatch.nickname,
+            email: isMatch.email,
+            mobile: isMatch.mobile,
+          };
+          const accessToken: string | undefined = generateAccessToken(userInfo);
+          const refreshToken: string | undefined  = generateRefreshToken(userInfo);
+          res.status(302)
+          .cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+          })
+          .send({
+            data: {
+              accessToken: accessToken
+            }
+          })
+        } else {
+          res.status(200).send({message: "no email matched"});
+        }
       }
     } catch(e) {
       res.status(500).send({message: "err"});
