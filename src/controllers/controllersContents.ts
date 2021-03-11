@@ -6,6 +6,7 @@ import { Users } from "../entity/Users";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
 //import { AnyARecord } from "node:dns";
+const crypto = require('crypto');
 const {
   isAuthorized,
   generateAccessToken,
