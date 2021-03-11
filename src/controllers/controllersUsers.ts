@@ -8,11 +8,12 @@ import {
 } from "typeorm";
 import { Users } from "../entity/Users";
 import { Contents } from "../entity/Contents";
+require("dotenv").config();
+const crypto = require('crypto');
 const {
   checkRefeshToken,
   generateAccessToken,
   generateRefreshToken,
-  sendRefreshToken,
   isAuthorized,
 } = require("./token");
 
@@ -33,7 +34,16 @@ const users = {
     const isMatchMobile = await Users.findByMobile(req.body.mobile);
     const isMatchEmail = await Users.findByEmail(req.body.email);
     const isMatchNickname = await Users.findByNickname(req.body.nickname);
-
+    const encrypted = crypto 
+      .pbkdf2Sync( 
+        req.body.password,
+        process.env.DATABASE_SALT,
+        115123,
+        64,
+        'sha512',
+      )
+      .toString('base64');
+    //req.body.password를 DATABASE_SALT로 115123번 반복해서 sha512로 암호화하고 64비트의 문자열로 만든다
     try {
       if (isMatchMobile) {
         return res.status(409).send({ message: "mobile already exists" });
@@ -45,7 +55,7 @@ const users = {
         const user = new Users();
         user.name = req.body.name;
         user.nickname = req.body.nickname;
-        user.password = req.body.password;
+        user.password = encrypted;
         user.email = req.body.email;
         user.mobile = req.body.mobile;
         await user.save();
@@ -99,13 +109,22 @@ const users = {
 
   postLogin: async (req: Request, res: Response) => {
     try {
+      const encrypted = crypto
+      .pbkdf2Sync(
+        req.body.password,
+        process.env.DATABASE_SALT,
+        115123,
+        64,
+        'sha512',
+      )
+      .toString('base64');
       const isEmail: any = await Users.findOne({
         email: req.body.email
       });
       
       if(!isEmail){
         res.status(404).send({"message": "email not found"});
-      }else if (isEmail.password !== req.body.password) {
+      }else if (isEmail.password !== encrypted) {
         res.status(404).send({"message": "wrong password"});
       } else {
         const userInfo = {
@@ -148,12 +167,6 @@ const users = {
     }
   },
 
-  // postOauth : async (req: Request, res: Response) => {
-  //     const users = await userRepository.find();
-  //     console.log(users)
-  //     res.send(users);
-  // },
-
   isemail: async (req: Request, res: Response) => {
     try {
       let email:string = req.body.email;
@@ -194,15 +207,15 @@ const users = {
 
   auth: async (req: Request, res: Response) => {
     try {
-      //!이메일O 해당 소셜로그인O -> 이미 가입한 소셜로그인 회원 =로그인
-      //!이메일O 해당 소셜로그인X -> 이미 가입한 일반회원 = 로그인
-      //!이메일X 해당 소셜 로그인X ->회원가입(DB에 유저 레코드 추가, 서버 액세스,리프레시 토큰 제공)
+      //이메일O 해당 소셜로그인O -> 이미 가입한 소셜로그인 회원 =로그인
+      //이메일O 해당 소셜로그인X -> 이미 가입한 일반회원 = 로그인
+      //이메일X 해당 소셜 로그인X ->회원가입(DB에 유저 레코드 추가, 서버 액세스,리프레시 토큰 제공)
       let email:string = req.body.email;
       if(email) {
         const matchUser: any = await Users.findUser(email);
         console.log(matchUser)
         if(matchUser) {
-          if(matchUser.auth) {//!이메일이 존재하고 소셜로그인이 존재해서 로그인이 필요한 경우
+          if(matchUser.auth) {//이메일이 존재하고 소셜로그인이 존재해서 로그인이 필요한 경우
             const userInfo = {
               name: "no name",
               nickname: matchUser.nickname,
@@ -222,7 +235,7 @@ const users = {
               },
               message: "ok",
             });
-          } else {//! 이메일 존재 소셜로그인 가입자 아님 로그인
+          } else {//이메일 존재 소셜로그인 가입자 아님 로그인
             matchUser.auth = req.body.auth;
             await matchUser.save();
             if(matchUser.auth) {
@@ -247,13 +260,21 @@ const users = {
               });
             }
           } 
-        }else { //! 이메일 존재X 회원가입 필요
+        }else { // 이메일 존재X 회원가입 필요
+          const encrypted = crypto // encrypted가 password 대신 입력된다!
+          .pbkdf2Sync(
+            "no password",
+            process.env.DATABASE_SALT,
+            115123,
+            64,
+            'sha512',
+          )
+          .toString('base64');
+          console.log(encrypted)
           const user = new Users();
           user.name = "no name"
-          console.log(user.nickname)
-          console.log("------------------------")
           user.nickname = req.body.nickname;
-          user.password = "no password";
+          user.password = encrypted;
           user.email = req.body.email;
           user.mobile = "no mobile";
           user.auth = req.body.auth;
@@ -333,7 +354,6 @@ const users = {
         });
       }
       console.log(isAuthorized(req));
-      //console.log("this is isAuthorized" + findDiaryByIdNotAccessToken)
     } catch (e) {
       res.status(500).send({ message: "err" });
       throw new Error(e);
