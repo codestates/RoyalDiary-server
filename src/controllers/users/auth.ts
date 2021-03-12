@@ -4,7 +4,7 @@ import { Users } from "../../entity/Users";
 const { generateAccessToken, generateRefreshToken } = require("../token");
 const crypto = require("crypto");
 
-export default (req: Request, res: Response) => {
+export default async (req: Request, res: Response) => {
   try {
     //이메일O 해당 소셜로그인O -> 이미 가입한 소셜로그인 회원 =로그인
     //이메일O 해당 소셜로그인X -> 이미 가입한 일반회원 = 로그인
