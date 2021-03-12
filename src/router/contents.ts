@@ -24,11 +24,11 @@ router.delete("/dcontent", delDcontent);
 
 router.post("/comment", postComment);
 
-router.get("/publiccontents",getPublicContents);
+router.get("/publiccontents", getPublicContents);
 
 router.patch("/ucomment", patchUcomment);
 
-router.delete("/dcomment",delDcomment);
+router.delete("/dcomment", delDcomment);
 
 router.get("/rcomment", recentComments);
 
