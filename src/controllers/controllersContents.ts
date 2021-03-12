@@ -479,6 +479,11 @@ const controllers = {
         take: 9,
       });
 
+      const countIsPublicTrueContents: any = await Contents.find({
+        select: ["id", "title", "imgUrl", "createdAt"],
+        where : [{"isPublic" : true} ],
+      });
+
       if(allContentOrderByRecent) {
         for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
           const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
@@ -494,7 +499,7 @@ const controllers = {
           .catch((err: string) => console.log(err));
         }
         const orderByRecent = [...allContentOrderByRecent];
-        const count = allContentOrderByRecent.length;
+        const count = countIsPublicTrueContents.length;
         res.status(200).send({
           data: {
             orderByRecent,
