@@ -522,6 +522,7 @@ const controllers = {
       }
       const allContentOrderByRecent: any = await Contents.find({
         select: ["id", "title", "imgUrl", "createdAt"],
+        where : [{"isPublic" : true} ],
         order: {
           createdAt: "DESC",
         },
@@ -529,25 +530,11 @@ const controllers = {
         take: 9,
       });
 
-      const allContentOrderByLikes: any = await Contents.find({
-        select: ["id", "title", "imgUrl", "createdAt", "views"],
-        order: {
-          views: "DESC",
-        },
-        skip,
-        take: 9,
-      });
-
-      if(allContentOrderByRecent && allContentOrderByLikes) {
+      if(allContentOrderByRecent) {
         for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
           const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
             allContentOrderByRecent[i].id
-            );
-          const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
-            allContentOrderByLikes[i].id
-            );
-              
-
+          );
           await Users.findById(
             getUserIdByContentsIdOrderByCreateAt.userId
           )
@@ -556,24 +543,13 @@ const controllers = {
             data.nickname;
           })
           .catch((err: string) => console.log(err));
-
-          await Users.findById(
-            getUserIdByContentsIdOrderByViews.userId
-          )
-          .then((data: any) => {
-            allContentOrderByLikes[i].nickname =
-            data.nickname;
-          })
-          .catch((err: string) => console.log(err));
         }
         
         const orderByRecent = [...allContentOrderByRecent];
-        const orderByLikes = [...allContentOrderByLikes];
         const count = await Contents.count();
         res.status(200).send({
           data: {
             orderByRecent,
-            orderByLikes,
             count
           }
         });
