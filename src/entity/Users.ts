@@ -73,10 +73,10 @@ export class Users extends BaseEntity {
       .where("users.id = :id", { id })
       .getOne();
   }
-  static findNicknameByContentsId(id: number): Promise<Users | undefined> {
+  static nicknameByUserId(id: number): Promise<Users | undefined> {
     return this.createQueryBuilder("users")
-    .select("nickname")  
-    .where("users.id = :id", { id })
-    .getRawOne();
+      .select("nickname")
+      .where("users.id = :id", { id })
+      .getRawOne();
   }
 }

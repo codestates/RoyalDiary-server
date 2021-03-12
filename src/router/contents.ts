@@ -22,6 +22,8 @@ router.patch("/ucomment", controller.patchUcomment);
 
 router.delete("/dcomment",controller.delDcomment);
 
+router.get("/rcomment", controller.recentComments);
+
 //router.post("/calendar", (req: Request, res: Response, next: NextFunction) => {
 //  res.send("calendar");
 //});
