@@ -544,9 +544,8 @@ const controllers = {
           })
           .catch((err: string) => console.log(err));
         }
-        
         const orderByRecent = [...allContentOrderByRecent];
-        const count = await Contents.count();
+        const count = allContentOrderByRecent.length;
         res.status(200).send({
           data: {
             orderByRecent,
