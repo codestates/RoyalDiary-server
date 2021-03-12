@@ -89,6 +89,7 @@ const controllers = {
           }
       }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
@@ -97,9 +98,9 @@ const controllers = {
       if(req.query.contentId) {
         const contentId: number = Number(req.query.contentId);
         console.log("this is getContent");
-        const findId: any = await Contents.findSelectByContentsId(contentId);
-        const getComment: any = await Comments.findCommentByContentId(contentId);
-        const getContent: any = await Contents.findByContentsId(contentId);
+        const findId: any = await Contents.findSelectByContentsId(contentId).catch((err) => console.log(err));
+        const getComment: any = await Comments.findCommentByContentId(contentId).catch((err) => console.log(err));
+        const getContent: any = await Contents.findByContentsId(contentId).catch((err) => console.log(err));
         if(getContent) {
           const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
             getContent.id
@@ -195,6 +196,7 @@ const controllers = {
         res.status(404).send({ message: "error" });
       }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
@@ -364,6 +366,7 @@ const controllers = {
           }
         }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
@@ -371,15 +374,15 @@ const controllers = {
     try {
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-      if(!req.body.contentId) res.status(404);
       const contentId: number = Number(req.body.contentId);
+      if(!req.body.contentId && contentId === NaN) res.status(404); 
       if (accessToken) {
         if(isAuthorized(req)) {
           //해석이 될 때    
           const { email } = isAuthorized(req);
           const findUserIdByContentsId = await Contents.findUserIdByContentsId(
             contentId
-          );
+          ).catch((err: string) => console.log("delDcontent error: " + err));
           console.log(findUserIdByContentsId)
           await Users.findUser(email)
             .then(async (data: any) => {
@@ -422,7 +425,8 @@ const controllers = {
             const { email } = verifyRefreshToken;
             const findUserIdByContentsId = await Contents.findUserIdByContentsId(
               contentId
-            );
+            )
+            .catch((err: string) => console.log("delDcontent error: " + err));;
             await Users.findUser(email)
               .then(async (data: any) => {
                 if (data.id !== findUserIdByContentsId.userId) {
@@ -444,7 +448,7 @@ const controllers = {
                   });
                 }
               })
-              .catch((err: string) => console.log(err));
+              .catch((err: string) => console.log("delDcontent error: " + err));
           } else {
             res
             .status(401)
@@ -452,63 +456,8 @@ const controllers = {
           }
         }
       }
-    // try {
-    //   const accessToken = req.headers.authorization;
-    //   const refreshToken = req.cookies.refreshToken;
-    //   const contentId: number = Number(req.body.contentId);
-    //   if (accessToken) {
-    //     //!액세스 토큰이 있고
-    //     const { email } = isAuthorized(req);
-    //     const findUser: any = await Users.findUser(email);
-    //     const findUserIdByContentsId = await Contents.findUserIdByContentsId(
-    //       contentId
-    //     );
-    //     await Users.findUser(email)
-    //       .then(async (data: any) => {
-    //         if (data.id !== findUserIdByContentsId) {
-    //           //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
-    //           res
-    //             .status(400)
-    //             .send({ message: "access token has been tampered" });
-    //         } else {
-    //           //!액세스 토큰의 정보가 데이터베이스에 존재할 때 200
-
-    //         }
-    //       })
-    //       .catch((err: string) => console.log(err));
-    //   } else {
-    //     //!액세스 토큰이 없고
-    //     if (!refreshToken) {
-    //       //!리프레시 토큰이 없는 경우 401
-    //       res.status(401).send({ message: "refresh token not provided" });
-    //     } else if (!checkRefeshToken(refreshToken)) {
-    //       //!리프레시 토큰이 유효하지 않은 경우 202
-    //       res
-    //         .status(202)
-    //         .send({
-    //           message: "refresh token is outdated, pleaes log in again",
-    //         });
-    //     } else {
-    //       //!리프레시 토큰이 유효하고
-    //       const { email } = checkRefeshToken(refreshToken);
-    //       const findUserIdByContentsId = await Contents.findUserIdByContentsId(
-    //         contentId
-    //       );
-    //       await Users.findUser(email)
-    //         .then(async (data: any) => {
-    //           if (data.id !== findUserIdByContentsId) {
-    //             //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
-    //             res
-    //               .status(400)
-    //               .send({ message: "refresh token has been tampered" });
-    //           } else {
-    //             //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
-    //           }
-    //         })
-    //         .catch((err: string) => console.log(err));
-    //       }
-    //     }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
@@ -586,6 +535,7 @@ const controllers = {
         })
       }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
@@ -603,8 +553,6 @@ const controllers = {
         comment.stampId = req.body.stampId;
         comment.content = req.body.contentId;
         await comment.save().catch((err: string) => console.log(err));
-        console.log("------------------------");
-        console.log(comment);
         res.send({
           message: "ok",
           data: {
@@ -846,8 +794,48 @@ const controllers = {
         }
       }
     } catch (e) {
+      res.status(500).send({ message: "err" });
       throw new Error(e);
     }
   },
+  recentComments: async (req: Request, res: Response) => {
+    try {
+      const accessTokenData = req.headers.authorization;
+      const contentId = req.body.contentId; //배열임
+      if(typeof contentId !== "object") {
+        res.status(404).send({message: "wrong input"}) 
+      } else {
+        let result: any[]= new Array;
+        if(accessTokenData) {
+          if(isAuthorized(req)) {
+            for(let el of contentId) {
+              await Comments.findCommentByContentId(el)
+              .then(async (data: any) => {
+                for(let eachComment of data) {
+                  const nickname: any = await Users.nicknameByUserId(eachComment.userId);
+                  let comment = {
+                    nickname: nickname.nickname,
+                    cratedAt: eachComment.createdAt,
+                    text: eachComment.text
+                  }
+                  result.push(comment);
+                }
+              })
+            }
+            res.send({
+              data: result
+            })
+          } else {
+            res.status(401).send({message: "access token has been tampered"})
+          }
+        } else {
+          res.status(404).send({message: "err"})
+        }
+      }
+    } catch(e) {
+      res.status(500).send({ message: "err" });
+      throw new Error(e);
+    }
+  }
 };
 export default controllers;
