@@ -6,7 +6,7 @@ import { Users } from "../entity/Users";
 import { Contents } from "../entity/Contents";
 import { Comments } from "../entity/Comments";
 //import { AnyARecord } from "node:dns";
-const crypto = require('crypto');
+const crypto = require("crypto");
 const {
   isAuthorized,
   generateAccessToken,
@@ -18,18 +18,16 @@ const controllers = {
     try {
       const accessTokenData = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-      
-      if (accessTokenData) {
-        if(!isAuthorized(req)){
-          res
-          .status(400)
-          .send({ message: "access token has been tampered" });
-        } else {
-          const {email} = isAuthorized(req);
 
-          const findUser: any = await Users.findUser(email)
+      if (accessTokenData) {
+        if (!isAuthorized(req)) {
+          res.status(400).send({ message: "access token has been tampered" });
+        } else {
+          const { email } = isAuthorized(req);
+
+          const findUser: any = await Users.findUser(email);
           //const findUser: any = await Users.findOne({email})
-          console.log(findUser)
+          console.log(findUser);
 
           const content = new Contents();
           content.user = findUser.id;
@@ -40,53 +38,48 @@ const controllers = {
           content.emotion = req.body.emotion;
           content.imgUrl = req.body.imgUrl;
           content.isPublic = req.body.isPublic;
-          await content.save()
-            .catch((err: string) => console.log(err));
-          res.status(200).send({message : "ok"});
+          await content.save().catch((err: string) => console.log(err));
+          res.status(200).send({ message: "ok" });
         }
-      } 
-      else if (!accessTokenData) {
-      //   res.status(401).send("access token has been tampered");
-      // } else {
+      } else if (!accessTokenData) {
+        //   res.status(401).send("access token has been tampered");
+        // } else {
         if (!refreshToken) {
           //!리프레시 토큰이 없는 경우 401
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
           //!리프레시 토큰이 유효하지 않은 경우 202
-          res
-            .status(202)
-            .send({
-              message: "refresh token is outdated, pleaes log in again",
-            });
+          res.status(202).send({
+            message: "refresh token is outdated, pleaes log in again",
+          });
         } else {
           //!리프레시 토큰이 유효하고
 
-              if (!isAuthorized(req)) {
-                //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
-                res
-                  .status(400)
-                  .send({ message: "refresh token has been tampered" });
-              } else {
-                //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
+          if (!isAuthorized(req)) {
+            //!액세스 토큰의 정보가 데이터베이스에 존재하지 않을 때 400//!리프레시 토큰의 정보가 데이터베이스에 존재하지 않을 때 400
+            res
+              .status(400)
+              .send({ message: "refresh token has been tampered" });
+          } else {
+            //!리프레시 토큰의 정보가 데이터베이스에 존재할 때 201
 
-                const { email } = isAuthorized(req);
-      
-                const findUser: any = await Users.findOne(email)
-        
-                const content = new Contents();
-                content.user = findUser.id;
-                content.imgMain = req.body.imgMain;
-                content.title = req.body.title;
-                content.content = req.body.content;
-                content.weather = req.body.weather;
-                content.emotion = req.body.emotion;
-                content.imgUrl = req.body.imgUrl;
-                content.isPublic = req.body.isPublic;
-                await content.save()
-                  .catch((err: string) => console.log(err));
-                res.status(200).send({message : "ok"});
-              }
+            const { email } = isAuthorized(req);
+
+            const findUser: any = await Users.findOne(email);
+
+            const content = new Contents();
+            content.user = findUser.id;
+            content.imgMain = req.body.imgMain;
+            content.title = req.body.title;
+            content.content = req.body.content;
+            content.weather = req.body.weather;
+            content.emotion = req.body.emotion;
+            content.imgUrl = req.body.imgUrl;
+            content.isPublic = req.body.isPublic;
+            await content.save().catch((err: string) => console.log(err));
+            res.status(200).send({ message: "ok" });
           }
+        }
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
@@ -95,27 +88,33 @@ const controllers = {
   },
   getContent: async (req: Request, res: Response) => {
     try {
-      if(req.query.contentId) {
+      if (req.query.contentId) {
         const contentId: number = Number(req.query.contentId);
         console.log("this is getContent");
-        const findId: any = await Contents.findSelectByContentsId(contentId).catch((err) => console.log(err));
-        const getComment: any = await Comments.findCommentByContentId(contentId).catch((err) => console.log(err));
-        const getContent: any = await Contents.findByContentsId(contentId).catch((err) => console.log(err));
-        if(getContent) {
+        const findId: any = await Contents.findSelectByContentsId(
+          contentId
+        ).catch((err) => console.log(err));
+        const getComment: any = await Comments.findCommentByContentId(
+          contentId
+        ).catch((err) => console.log(err));
+        const getContent: any = await Contents.findByContentsId(
+          contentId
+        ).catch((err) => console.log(err));
+        if (getContent) {
           const getUserIdByContentsId: any = await Contents.findUserIdByContentsId(
             getContent.id
-          ).catch((err) => console.log(err));;
+          ).catch((err) => console.log(err));
           const getContentUser: any = await Users.findById(
             getUserIdByContentsId.userId
-          ).catch((err) => console.log(err));;
-            
+          ).catch((err) => console.log(err));
+
           findId.nickname = getContentUser.nickname;
           for (let i: number = 0; i < getComment.length; i++) {
             await Users.findOne({ id: getComment[i].userId })
-            .then((data: any) => {
-              getComment[i].nickname = data.nickname;
-            })
-            .catch((err) => console.log(err));
+              .then((data: any) => {
+                getComment[i].nickname = data.nickname;
+              })
+              .catch((err) => console.log(err));
           }
           // for (let i: number = 0; i < getComment.length; i++) {
           //   const stampId: number = getComment[i].stampId;
@@ -125,7 +124,7 @@ const controllers = {
           //   })
           //   .catch((err) => console.log(err));
           // }
-          
+
           res.status(200).send({
             data: {
               ...findId,
@@ -133,11 +132,10 @@ const controllers = {
             },
           });
         } else {
-          res.status(204)
-          .send(); //.send()가 없으면 에러가 나니 주의할 것
+          res.status(204).send(); //.send()가 없으면 에러가 나니 주의할 것
         }
       } else {
-        res.status(404).send({message: "bad request"})
+        res.status(404).send({ message: "bad request" });
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
@@ -146,7 +144,7 @@ const controllers = {
   },
   getContents: async (req: Request, res: Response) => {
     try {
-      console.log("this is getContents")
+      console.log("this is getContents");
       if (isAuthorized(req)) {
         const findUser: any = await Users.findUser(isAuthorized(req).email);
         const pageNum: any = req.query.page;
@@ -180,7 +178,7 @@ const controllers = {
 
           const orderByRecent = [...allContentOrderByRecent];
           const orderByLikes = [...allContentOrderByLikes];
-          const findUsers: any[] = await Contents.find({user: findUser.id});
+          const findUsers: any[] = await Contents.find({ user: findUser.id });
           const count = findUsers.length;
           res.status(200).send({
             data: {
@@ -202,7 +200,7 @@ const controllers = {
   },
   patchUcontent: async (req: Request, res: Response) => {
     try {
-      console.log("this is patchUcontent")
+      console.log("this is patchUcontent");
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
@@ -273,11 +271,9 @@ const controllers = {
         if (!refreshToken) {
           res.status(401).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
-          res
-            .status(202)
-            .send({
-              message: "refresh token is outdated, pleaes log in again",
-            });
+          res.status(202).send({
+            message: "refresh token is outdated, pleaes log in again",
+          });
         } else {
           const { email } = checkRefeshToken(refreshToken);
           const findUserIdByContentsId = await Contents.findUserIdByContentsId(
@@ -363,8 +359,8 @@ const controllers = {
               }
             })
             .catch((err: string) => console.log(err));
-          }
         }
+      }
     } catch (e) {
       res.status(500).send({ message: "err" });
       throw new Error(e);
@@ -375,18 +371,18 @@ const controllers = {
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
       const contentId: number = Number(req.body.contentId);
-      if(!req.body.contentId && contentId === NaN) res.status(404); 
+      if (!req.body.contentId && contentId === NaN) res.status(404);
       if (accessToken) {
-        if(isAuthorized(req)) {
-          //해석이 될 때    
+        if (isAuthorized(req)) {
+          //해석이 될 때
           const { email } = isAuthorized(req);
           const findUserIdByContentsId = await Contents.findUserIdByContentsId(
             contentId
           ).catch((err: string) => console.log("delDcontent error: " + err));
-          console.log(findUserIdByContentsId)
+          console.log(findUserIdByContentsId);
           await Users.findUser(email)
             .then(async (data: any) => {
-              console.log(data.id)
+              console.log(data.id);
               if (data.id !== findUserIdByContentsId.userId) {
                 res
                   .status(401)
@@ -394,24 +390,25 @@ const controllers = {
               } else {
                 await Contents.deleteByContentsId(
                   req.body.contentId
-                ).catch((err: string) => console.log("delDcontent error: " + err));
-                res.status(200).send({ message: "content successfully deleted" });
+                ).catch((err: string) =>
+                  console.log("delDcontent error: " + err)
+                );
+                res
+                  .status(200)
+                  .send({ message: "content successfully deleted" });
               }
             })
             .catch((err: string) => console.log(err));
         } else {
-          res.status(401)
-          .send({message: "access token has been tampered"})
+          res.status(401).send({ message: "access token has been tampered" });
         }
       } else {
         if (!refreshToken) {
           res.status(400).send({ message: "refresh token not provided" });
         } else if (!checkRefeshToken(refreshToken)) {
-          res
-            .status(202)
-            .send({
-              message: "refresh token is outdated, pleaes log in again",
-            });
+          res.status(202).send({
+            message: "refresh token is outdated, pleaes log in again",
+          });
         } else {
           const verifyRefreshToken: {
             name: string;
@@ -421,12 +418,11 @@ const controllers = {
             iat?: number;
             exp?: number;
           } = checkRefeshToken(refreshToken);
-          if(verifyRefreshToken) {
+          if (verifyRefreshToken) {
             const { email } = verifyRefreshToken;
             const findUserIdByContentsId = await Contents.findUserIdByContentsId(
               contentId
-            )
-            .catch((err: string) => console.log("delDcontent error: " + err));;
+            ).catch((err: string) => console.log("delDcontent error: " + err));
             await Users.findUser(email)
               .then(async (data: any) => {
                 if (data.id !== findUserIdByContentsId.userId) {
@@ -444,15 +440,16 @@ const controllers = {
                     data: {
                       accessToken: generateAccessToken(userInfo),
                     },
-                    message: "New AccessToken, please restore and request again"
+                    message:
+                      "New AccessToken, please restore and request again",
                   });
                 }
               })
               .catch((err: string) => console.log("delDcontent error: " + err));
           } else {
             res
-            .status(401)
-            .send({ message: "refresh token has been tampered" });
+              .status(401)
+              .send({ message: "refresh token has been tampered" });
           }
         }
       }
@@ -463,7 +460,7 @@ const controllers = {
   },
   getPublicContents: async (req: Request, res: Response) => {
     try {
-      console.log("this is getPublicContents")
+      console.log("this is getPublicContents");
       const pageNum: any = req.query.page;
       let skip: number = 0;
       if (pageNum > 1) {
@@ -487,35 +484,28 @@ const controllers = {
         take: 9,
       });
 
-      if(allContentOrderByRecent && allContentOrderByLikes) {
+      if (allContentOrderByRecent && allContentOrderByLikes) {
         for (let i: number = 0; i < allContentOrderByRecent.length; i++) {
           const getUserIdByContentsIdOrderByCreateAt: any = await Contents.findUserIdByContentsId(
             allContentOrderByRecent[i].id
-            );
+          );
           const getUserIdByContentsIdOrderByViews: any = await Contents.findUserIdByContentsId(
             allContentOrderByLikes[i].id
-            );
-              
+          );
 
-          await Users.findById(
-            getUserIdByContentsIdOrderByCreateAt.userId
-          )
-          .then((data: any) => {
-            allContentOrderByRecent[i].nickname =
-            data.nickname;
-          })
-          .catch((err: string) => console.log(err));
+          await Users.findById(getUserIdByContentsIdOrderByCreateAt.userId)
+            .then((data: any) => {
+              allContentOrderByRecent[i].nickname = data.nickname;
+            })
+            .catch((err: string) => console.log(err));
 
-          await Users.findById(
-            getUserIdByContentsIdOrderByViews.userId
-          )
-          .then((data: any) => {
-            allContentOrderByLikes[i].nickname =
-            data.nickname;
-          })
-          .catch((err: string) => console.log(err));
+          await Users.findById(getUserIdByContentsIdOrderByViews.userId)
+            .then((data: any) => {
+              allContentOrderByLikes[i].nickname = data.nickname;
+            })
+            .catch((err: string) => console.log(err));
         }
-        
+
         const orderByRecent = [...allContentOrderByRecent];
         const orderByLikes = [...allContentOrderByLikes];
         const count = await Contents.count();
@@ -523,16 +513,16 @@ const controllers = {
           data: {
             orderByRecent,
             orderByLikes,
-            count
-          }
+            count,
+          },
         });
       } else {
         res.status(204).send({
           data: {
             orderByRecent: {},
-            orderByLikes: {}
-          }
-        })
+            orderByLikes: {},
+          },
+        });
       }
     } catch (e) {
       res.status(500).send({ message: "err" });
@@ -624,7 +614,7 @@ const controllers = {
   },
   patchUcomment: async (req: Request, res: Response) => {
     try {
-      console.log("this is patchUcomment")
+      console.log("this is patchUcomment");
       const refreshToken = req.headers.refreshToken;
       const findCommentByCommentId: any = await Comments.findOne({
         id: req.body.commentId,
@@ -637,7 +627,7 @@ const controllers = {
         });
         const comment: any = await Comments.findById(req.body.commentId);
         comment.text = req.body.text ? req.body.text : comment.text;
-        console.log("thisis comment --------------------")
+        console.log("thisis comment --------------------");
         console.log(findUserId);
         // comment.user = findUserId;
         console.log(comment.user);
@@ -684,8 +674,10 @@ const controllers = {
           const comment: any = await Comments.findById(req.body.commentId);
           comment.text = req.body.text ? req.body.text : comment.text;
           comment.user = comment.user; //findUserIdByrefreshToken.id;
-          comment.stampId = req.body.stampId ? req.body.stampId : comment.stampId;
-          comment.content = comment.content;//req.body.contentId;
+          comment.stampId = req.body.stampId
+            ? req.body.stampId
+            : comment.stampId;
+          comment.content = comment.content; //req.body.contentId;
           comment.updatedAt = new Date();
           await comment.save().catch((err: string) => console.log(err));
           res.status(201).send({
@@ -712,36 +704,36 @@ const controllers = {
     }
   },
   delDcomment: async (req: Request, res: Response) => {
-
     try {
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-      if(!req.body.commentId) res.status(404);
+      if (!req.body.commentId) res.status(404);
       const commentId: number = Number(req.body.commentId);
       if (accessToken) {
-        if(isAuthorized(req)) {
-          //해석이 될 때    
+        if (isAuthorized(req)) {
+          //해석이 될 때
           const { email } = isAuthorized(req);
           const findUserIdBycommentId = await Comments.findUserIdByCommentId(
             commentId
           );
-          console.log(findUserIdBycommentId)
+          console.log(findUserIdBycommentId);
           await Users.findUser(email)
             .then(async (data: any) => {
-              console.log(data.id)
+              console.log(data.id);
               if (data.id !== findUserIdBycommentId.userId) {
                 res
                   .status(401)
                   .send({ message: "access token has been tampered" });
               } else {
-                await Comments.deleteByCommentId(commentId)
-                res.status(200).send({ message: "comment successfully deleted" });
+                await Comments.deleteByCommentId(commentId);
+                res
+                  .status(200)
+                  .send({ message: "comment successfully deleted" });
               }
             })
             .catch((err: string) => console.log(err));
         } else {
-          res.status(401)
-          .send({message: "access token has been tampered"})
+          res.status(401).send({ message: "access token has been tampered" });
         }
       } else {
         if (!refreshToken) {
@@ -749,7 +741,9 @@ const controllers = {
         } else if (!checkRefeshToken(refreshToken)) {
           res
             .status(202)
-            .send({message: "refresh token is outdated, pleaes log in again"});
+            .send({
+              message: "refresh token is outdated, pleaes log in again",
+            });
         } else {
           const verifyRefreshToken: {
             name: string;
@@ -759,11 +753,11 @@ const controllers = {
             iat?: number;
             exp?: number;
           } = checkRefeshToken(refreshToken);
-          if(verifyRefreshToken) {
+          if (verifyRefreshToken) {
             const { email } = verifyRefreshToken;
-          const findUserIdBycommentId = await Comments.findUserIdByCommentId(
-            commentId
-          );
+            const findUserIdBycommentId = await Comments.findUserIdByCommentId(
+              commentId
+            );
             await Users.findUser(email)
               .then(async (data: any) => {
                 if (data.id !== findUserIdBycommentId.userId) {
@@ -781,15 +775,16 @@ const controllers = {
                     data: {
                       accessToken: generateAccessToken(userInfo),
                     },
-                    message: "New AccessToken, please restore and request again"
+                    message:
+                      "New AccessToken, please restore and request again",
                   });
                 }
               })
               .catch((err: string) => console.log(err));
           } else {
             res
-            .status(401)
-            .send({ message: "refresh token has been tampered" });
+              .status(401)
+              .send({ message: "refresh token has been tampered" });
           }
         }
       }
@@ -802,40 +797,43 @@ const controllers = {
     try {
       const accessTokenData = req.headers.authorization;
       const contentId = req.body.contentId; //배열임
-      if(typeof contentId !== "object") {
-        res.status(404).send({message: "wrong input"}) 
+      if (typeof contentId !== "object") {
+        res.status(404).send({ message: "wrong input" });
       } else {
-        let result: any[]= new Array;
-        if(accessTokenData) {
-          if(isAuthorized(req)) {
-            for(let el of contentId) {
-              await Comments.findCommentByContentId(el)
-              .then(async (data: any) => {
-                for(let eachComment of data) {
-                  const nickname: any = await Users.nicknameByUserId(eachComment.userId);
-                  let comment = {
-                    nickname: nickname.nickname,
-                    cratedAt: eachComment.createdAt,
-                    text: eachComment.text
+        let result: any[] = new Array();
+        if (accessTokenData) {
+          if (isAuthorized(req)) {
+            for (let el of contentId) {
+              await Comments.findCommentByContentId(el).then(
+                async (data: any) => {
+                  for (let eachComment of data) {
+                    const nickname: any = await Users.nicknameByUserId(
+                      eachComment.userId
+                    );
+                    let comment = {
+                      nickname: nickname.nickname,
+                      cratedAt: eachComment.createdAt,
+                      text: eachComment.text,
+                    };
+                    result.push(comment);
                   }
-                  result.push(comment);
                 }
-              })
+              );
             }
             res.send({
-              data: result
-            })
+              data: result,
+            });
           } else {
-            res.status(401).send({message: "access token has been tampered"})
+            res.status(401).send({ message: "access token has been tampered" });
           }
         } else {
-          res.status(404).send({message: "err"})
+          res.status(404).send({ message: "err" });
         }
       }
-    } catch(e) {
+    } catch (e) {
       res.status(500).send({ message: "err" });
       throw new Error(e);
     }
-  }
+  },
 };
 export default controllers;
