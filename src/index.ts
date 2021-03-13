@@ -23,9 +23,12 @@ const config: any = {
   // migrations: ["src/migration/**/*.ts"],
   // subscribers: ["src/subscriber/**/*.ts"],
   cli: {
-    entitiesDir: "src/entity",
-    migrationsDir: "src/migration",
-    subscribersDir: "src/subscriber",
+    entitiesDir: __dirname + "/entity",
+    migrationsDir: __dirname + "/migration",
+    subscribersDir: __dirname + "/subscriber",
+    // entitiesDir: "src/entity",
+    // migrationsDir: "src/migration",
+    // subscribersDir: "src/subscriber",
   },
 };
 /******************multer setting***********************/
