@@ -13,19 +13,30 @@ export default async (req: Request, res: Response) => {
     try {
       const accessToken = req.headers.authorization;
       const refreshToken = req.cookies.refreshToken;
-      if(!req.body.commentId) res.status(404);
+      if(!req.body.commentId) {
+        return res.status(404).send({message : "bad request"});
+      }
       const commentId: number = Number(req.body.commentId);
+
       if (accessToken) {
         if(isAuthorized(req)) {
           //해석이 될 때    
           const { email } = isAuthorized(req);
+
           const findUserIdBycommentId = await Comments.findUserIdByCommentId(
             commentId
           );
+
           console.log(findUserIdBycommentId)
+
+          //if undefined
+          if(!findUserIdBycommentId) {
+            return res.status(404).send({message : "bad request"});
+          }
+          
           await Users.findUser(email)
             .then(async (data: any) => {
-              console.log(data.id)
+              console.log(data)
               if (data.id !== findUserIdBycommentId.userId) {
                 res
                   .status(401)
