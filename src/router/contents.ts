@@ -30,6 +30,6 @@ router.patch("/ucomment", patchUcomment);
 
 router.delete("/dcomment", delDcomment);
 
-router.get("/rcomment", recentComments);
+router.post("/rcomment", recentComments);
 
 export = router;
