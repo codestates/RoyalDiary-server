@@ -19,7 +19,7 @@ export default async (req: Request, res: Response) => {
         }
         const allContentOrderByRecent: any = await Contents.find({
           where: { user: findUser.id },
-          select: ["title", "imgUrl", "createdAt", "updatedAt"],
+          select: ["id", "title", "imgUrl", "createdAt", "updatedAt"],
           order: {
             createdAt: "DESC",
           },
@@ -28,7 +28,7 @@ export default async (req: Request, res: Response) => {
         });
         const allContentOrderByLikes: any = await Contents.find({
           where: { user: findUser.id },
-          select: ["title", "imgUrl", "createdAt", "updatedAt"],
+          select: ["id", "title", "imgUrl", "createdAt", "updatedAt"],
           order: {
             views: "DESC",
           },
