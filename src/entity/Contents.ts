@@ -52,7 +52,7 @@ export class Contents extends BaseEntity {
   updatedAt: Date;
 
   /* contents(one) to comments(Many) */
-  @OneToMany((type) => Comments, (comments) => comments.content)
+  @OneToMany((type) => Comments, (comments) => comments.content, { cascade: true })
   comments: Comments[];
 
   /* contents(one) & comment(many) */

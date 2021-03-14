@@ -24,7 +24,7 @@ export class Comments extends BaseEntity {
   updatedAt: Date;
 
   /* users(one) & comment(many) */
-  @ManyToOne((type) => Users, (users) => users.id)
+  @ManyToOne((type) => Users, (users) => users.id, { onDelete: "CASCADE" })
   @JoinColumn({name: 'userId'})
   user: Users;
 
@@ -33,7 +33,7 @@ export class Comments extends BaseEntity {
   stampId?: number;
 
   /* contents(one) & comment(many) */
-  @ManyToOne((type) => Contents, (contents) => contents.id)
+  @ManyToOne((type) => Contents, (contents) => contents.id, { onDelete: "CASCADE" })
   @JoinColumn({name: 'contentId'})
   content: Contents;
 

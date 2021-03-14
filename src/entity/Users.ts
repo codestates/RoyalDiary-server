@@ -42,7 +42,7 @@ export class Users extends BaseEntity {
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
 
-  @OneToMany((type) => Comments, (comments) => comments.user)
+  @OneToMany((type) => Comments, (comments) => comments.user, { cascade: true })
   comments: Comments[];
 
   @OneToMany((type) => Contents, (contents) => contents.user, { cascade: true })
