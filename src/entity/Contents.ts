@@ -36,7 +36,7 @@ export class Contents extends BaseEntity {
   @Column("longtext")
   imgMain: string;
 
-  @Column()
+  @Column("longtext")
   imgUrl: string;
 
   //   @Column()
