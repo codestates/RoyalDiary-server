@@ -73,7 +73,9 @@ createConnection(config)
     console.log("typeorm error", err);
   });
 
-app.use(express.json()); //익스프레스는 바디파서 대신 쓰는거! 바디파서는 받지않아도 된다!
+app.use(express.json({
+  limit: "10mb"
+})); //익스프레스는 바디파서 대신 쓰는거! 바디파서는 받지않아도 된다!
 app.use(cookieparser());
 app.use(
   cors({
